@@ -1,2 +1,5 @@
 *.o
 zork
+
+/target
+**/*.rs.bk
