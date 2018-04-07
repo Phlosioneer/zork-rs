@@ -3,3 +3,4 @@ zork
 
 /target
 **/*.rs.bk
+*log.txt

@@ -40,6 +40,10 @@ fn main() {
         .define("TEXTFILE", Some(dest_string.as_str()))
         .define("AS_RUST_LIB", None)
         //.flag("-Werror=implicit-function-declaration")
+        .flag("-Wno-parentheses")
+        .flag("-Wno-unused-parameter")
+        .flag("-Wno-unused-but-set-variable")
+        .flag("-Wno-missing-braces")
         .compile("c_zork");
 
     // Link the ncurses library.

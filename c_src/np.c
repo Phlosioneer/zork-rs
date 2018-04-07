@@ -14,7 +14,7 @@
 extern int system P((const char *));
 
 static logical lex_ P((char *, integer *, integer *, logical));
-
+#ifndef AS_RUST_LIB
 void rdline_(buffer, who)
 char *buffer;
 integer who;
@@ -58,7 +58,7 @@ L90:
     prsvec_1.prscon = 1;
 /* 						!RESTART LEX SCAN. */
 } /* rdline_ */
-
+#endif /* AS_RUST_LIB */
 /* PARSE-	TOP LEVEL PARSE ROUTINE */
 
 /* THIS ROUTINE DETAILS ON BIT 0 OF PRSFLG */

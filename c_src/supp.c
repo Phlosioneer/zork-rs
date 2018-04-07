@@ -30,13 +30,14 @@ extern struct tm *localtime ();
 
 /* Terminate the game */
 
+
+#ifndef AS_RUST_LIB
 void exit_()
 {
     fprintf(stderr, "The game is over.\n");
-#ifndef AS_RUST_LIB
     exit(0);
-#endif /* AS_RUST_LIB */
 }
+#endif /* AS_RUST_LIB */
 
 /* Get time in hours, minutes and seconds */
 

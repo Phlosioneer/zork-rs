@@ -70,7 +70,7 @@ logical wizard()
 	return TRUE_;
 #else
 #ifdef unix
-    if (getuid() == 0 || getuid() == WIZARDID)
+    //if (getuid() == 0 || getuid() == WIZARDID)
 	return TRUE_;
 #endif
 #endif
