@@ -1,14 +1,5 @@
 # Makefile for dungeon
 
-# Where to install the program
-BINDIR = /usr/games
-
-# Where to install the data file
-DATADIR = /usr/games/lib
-
-# Where to install the man page
-MANDIR = /usr/share/man
-
 # The dungeon program provides a ``more'' facility which tries to
 # figure out how many rows the terminal has.  Several mechanisms are
 # supported for determining this; the most common one has been left
@@ -18,16 +9,16 @@ MANDIR = /usr/share/man
 # more option 1: use the termcap routines.  On some systems the LIBS
 # variable may need to be set to -lcurses.  On some it may need to
 # be /usr/lib/termcap.o.  These options are commented out below.
-LIBS = -ltermcap
-TERMFLAG =
-# LIBS = -lcurses
+# LIBS = -ltermcap
+# TERMFLAG = 
 # LIBS = /usr/lib/termcap.o
 
 # more option 2: use the terminfo routines.  On some systems the LIBS
 # variable needs to be -lcursesX, but probably all such systems support
 # the termcap routines (option 1) anyhow.
-# LIBS = -lcurses
-# TERMFLAG = -DMORE_TERMINFO
+# LIBS = /lib/x86_64-linux-gnu/libncurses.so.5
+LIBS = -lncurses
+TERMFLAG = -DMORE_TERMINFO
 
 # more option 3: assume all terminals have 24 rows
 # LIBS =
@@ -45,11 +36,12 @@ TERMFLAG =
 GDTFLAG = -DALLOW_GDT
 
 # Compilation flags
-CFLAGS = -g #-static
+CFLAGS = -g #-Wall #-static
 # On SCO Unix Development System 3.2.2a, the const type qualifier does
 # not work correctly when using cc.  The following line will cause it
 # to not be used and should be uncommented.
 # CFLAGS= -O -Dconst=
+
 
 ##################################################################
 
@@ -60,19 +52,17 @@ CSRC =	actors.c ballop.c clockr.c demons.c dgame.c dinit.c dmain.c\
 	nrooms.c objcts.c rooms.c sobjs.c supp.c sverbs.c verbs.c villns.c
 
 # Object files
-OBJS =	actors.o ballop.o clockr.o demons.o dgame.o dinit.o dmain.o\
+OBJS_NO_MAIN =	actors.o ballop.o clockr.o demons.o dgame.o dinit.o\
 	dso1.o dso2.o dso3.o dso4.o dso5.o dso6.o dso7.o dsub.o dverb1.o\
 	dverb2.o gdt.o lightp.o local.o nobjs.o np.o np1.o np2.o np3.o\
 	nrooms.o objcts.o rooms.o sobjs.o supp.o sverbs.o verbs.o villns.o
 
-dungeon: $(OBJS) dtextc.dat
-	$(CC) $(CFLAGS) -o zork $(OBJS) $(LIBS)
+OBJS = $(OBJS_NO_MAIN) dmain.o
 
-install: zork dtextc.dat
-	mkdir -p $(BINDIR) $(LIBDIR) $(MANDIR)/man6
-	cp zork $(BINDIR)
-	cp dtextc.dat $(DATADIR)
-	cp dungeon.6 $(MANDIR)/man6/
+all: zork
+
+zork: $(OBJS) dtextc.dat
+	$(CC) $(CFLAGS) -o zork $(OBJS) $(LIBS)
 
 clean:
 	rm -f $(OBJS) zork core dsave.dat *~

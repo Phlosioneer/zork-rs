@@ -33,7 +33,9 @@ extern struct tm *localtime ();
 void exit_()
 {
     fprintf(stderr, "The game is over.\n");
+#ifndef AS_RUST_LIB
     exit(0);
+#endif /* AS_RUST_LIB */
 }
 
 /* Get time in hours, minutes and seconds */
@@ -116,9 +118,9 @@ extern int tgetnum P((const char *));
 
 #ifdef MORE_TERMINFO
 
-#include <cursesX.h>
+#include <curses.h>
 #include <term.h>
-extern void setupterm P((const char *, int, int));
+extern int setupterm P((const char *, int, int*));
 
 #else /* ! MORE_TERMINFO */
 

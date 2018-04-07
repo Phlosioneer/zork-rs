@@ -9,10 +9,15 @@
 
 #include "funcs.h"
 #include "vars.h"
+#include <stdio.h>
 
+#ifdef AS_RUST_LIB
+void c_main() 
+#else
 void main(argc, argv)
 int argc;
 char **argv;
+#endif /* AS_RUST_LIB */
 {
 /* 1) INITIALIZE DATA STRUCTURES */
 /* 2) PLAY GAME */
