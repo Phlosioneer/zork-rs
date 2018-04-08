@@ -1,15 +1,12 @@
+use libc::{c_char, c_int};
 
-use libc::{c_int, c_char};
-
-#[allow(unused)]
 #[repr(C)]
 pub struct Logical(c_int);
 
-#[allow(unused)]
 #[link(name = "c_zork")]
 extern "C" {
     pub fn c_main();
-   
+
     ///////////////////////////////////////////////////////////////////////////
     // Defined in func.h
 
@@ -25,11 +22,11 @@ extern "C" {
     pub fn cpgoto_(a1: c_int);
     pub fn cpinfo_(a1: c_int, a2: c_int);
     pub fn encryp_(a1: *const c_char, a2: *mut c_char);
-    
+
     // supp.c
     // Exit the game using exit(0),
     //pub fn exit_();
-    
+
     pub fn fightd_();
     pub fn game_();
     pub fn gdt_();
@@ -41,7 +38,7 @@ extern "C" {
     pub fn orphan_(a1: c_int, a2: c_int, a3: c_int, a4: c_int, a5: c_int);
     pub fn princo_(a1: c_int, a2: c_int);
     pub fn princr_(a1: Logical, a2: c_int);
-    
+
     // np.c
     // Read a line of input into the buffer. The 'who' parameter is either 0
     // or 1. If it is 1, a "roleplay" prompt is printed, indicating that it
@@ -121,8 +118,8 @@ extern "C" {
 
     ////////////
     // np.h
-    pub static lex_: extern "C" fn(
-        a1: *mut c_char, a2: *mut c_int, a3: *mut c_int, a4: Logical) -> Logical;
+    pub static lex_:
+        extern "C" fn(a1: *mut c_char, a2: *mut c_int, a3: *mut c_int, a4: Logical) -> Logical;
 
 }
 
@@ -132,7 +129,5 @@ pub struct PrsVec {
     pub prsi: c_int,
     pub prso: c_int,
     pub prswon: Logical,
-    pub prscon: c_int
+    pub prscon: c_int,
 }
-
-

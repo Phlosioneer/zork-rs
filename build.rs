@@ -1,12 +1,11 @@
-
-extern crate gcc;
 extern crate build_helper;
+extern crate gcc;
 extern crate pkg_config;
 
+use build_helper::Profile;
+use build_helper::cargo::manifest;
 use gcc::Build;
 use std::fs;
-use build_helper::cargo::manifest;
-use build_helper::Profile;
 
 fn main() {
     // Copy the dtextc.dat file into the build directory.
@@ -15,19 +14,20 @@ fn main() {
     let mut dest = manifest::dir();
     match build_helper::profile() {
         Profile::Debug => dest.push("target/debug/dtextc.dat"),
-        Profile::Release => dest.push("target/release/dtextc.dat")
+        Profile::Release => dest.push("target/release/dtextc.dat"),
     }
     fs::copy(data_file, dest.clone()).unwrap();
-    
+
     // Compile and link the original C executable as a library.
     let paths = fs::read_dir("./c_src/").unwrap();
 
-    let c_files = paths.map(|entry| entry.unwrap().path())
-        .filter(|ref p| if let Some(ext) = p.extension() {
-            ext == "c" 
+    let c_files = paths.map(|entry| entry.unwrap().path()).filter(|ref p| {
+        if let Some(ext) = p.extension() {
+            ext == "c"
         } else {
-            false 
-        });
+            false
+        }
+    });
 
     let mut dest_string = "\"".to_string();
     dest_string.push_str(dest.to_str().unwrap());
@@ -50,6 +50,3 @@ fn main() {
     //println!("cargo:rustc-include-lib=dylib=ncurses");
     pkg_config::probe_library("ncurses").unwrap();
 }
-
-
-

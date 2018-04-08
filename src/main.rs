@@ -1,170 +1,167 @@
-
 #[macro_use]
 extern crate log;
+
+#[macro_use]
+extern crate lazy_static;
+
+extern crate chrono;
 extern crate libc;
 extern crate simplelog;
 
-mod ffi;
+#[allow(unused)]
+pub mod ffi;
 
+pub mod replacement;
+
+use replacement::PromptType;
+use simplelog::{CombinedLogger, Config, LevelFilter, WriteLogger};
+use std::fs::{self, File};
 use std::io::{self, Write};
-use std::slice;
-use std::fs::File;
-use libc::c_int;
-use std::process::{self, Stdio, Command};
-use simplelog::{WriteLogger, Config, LevelFilter, CombinedLogger};
+use std::path::Path;
+use std::process::{self, Command, Stdio};
+use std::sync::Mutex;
 
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
-enum PromptType {
-    InCharacter,
-    OutOfCharacter
+lazy_static! {
+    static ref PLAYBACK_FILE: Mutex<Option<File>> = Mutex::new(Some(create_playback_file()));
 }
 
-impl From<c_int> for PromptType {
-    fn from(other: c_int) -> PromptType {
-        if other == 0 {
-            PromptType::OutOfCharacter
-        } else if other == 1 {
-            PromptType::InCharacter
-        } else {
-            panic!("Invalid conversion from c_int to PromptType: {:?}", other);
-        }
+/// Creates a new file for storing the player's moves. It can be used to reproduce
+/// a run through zork.
+fn create_playback_file() -> File {
+    // Get or create the "playback" directory.
+    let playback_dir = Path::new("./playback");
+    if !playback_dir.is_dir() {
+        fs::create_dir(&playback_dir).unwrap();
+    }
+
+    // Get the next unused playback file.
+    let mut filename = playback_dir.join("playback0.txt");
+    let mut counter: u64 = 0;
+    while filename.exists() {
+        counter += 1;
+        filename = playback_dir.join(format!("playback{}.txt", counter));
+    }
+
+    // Create the file and return.
+    File::create(filename).unwrap()
+}
+
+/// Prints the prompt and reads a line of input. If the input is a shell command
+/// (prefixed by "!"), execute it and read again.
+pub fn read_line(who: PromptType) -> String {
+    // Print the prompt.
+    if who == PromptType::InCharacter {
+        info!("Printing prompt");
+        print!(">");
+        io::stdout().flush().unwrap();
+    }
+
+    // Read from stdin until a newline.
+    let mut input = String::with_capacity(80);
+    let res = io::stdin().read_line(&mut input);
+    if let Err(err) = res {
+        error!("Error reading string: {:?}", &err);
+        exit_program();
+    }
+    debug!("Read string: {:?}", &input);
+
+    // Update some global variables.
+    trace!("calling more_input()");
+    unsafe {
+        ffi::more_input();
+    }
+
+    // Ensure that the input is ascii.
+    if !input.is_ascii() {
+        error!("Input string is not valid ascii.");
+        exit_program();
+    }
+
+    // Trim whitespace from the input.
+    let trimmed = input.trim();
+
+    // If there was no input, try again.
+    if trimmed.len() == 0 {
+        return read_line(who);
+    }
+
+    // Check if this is a system command.
+    if trimmed.starts_with("!") {
+        // Execute the command.
+        execute_shell_command(&trimmed[1..]);
+
+        // Read again.
+        return read_line(who);
+    } else {
+        // Convert the string to uppercase.
+        let mut ret = trimmed.to_string();
+        ret.make_ascii_uppercase();
+
+        // Record this line.
+        record_move(&ret);
+
+        // Return.
+        ret
     }
 }
 
-impl From<PromptType> for c_int {
-    fn from(other: PromptType) -> c_int {
-        match other {
-            PromptType::OutOfCharacter => 0,
-            PromptType::InCharacter => 1
-        }
-    }
-}
+/// Executes a shell command, and waits for it to return.
+fn execute_shell_command(command: &str) {
+    // Forward this command to the shell, minus the first char.
+    trace!("Calling shell with command {:?}", &command);
+    let res = Command::new("bash")
+        .arg("-c")
+        .arg(&command)
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
+        .stdin(Stdio::inherit())
+        .spawn();
 
-/// Read a line of input into the buffer. The 'who' parameter is either 0
-/// or 1. If it is 1, a "roleplay" prompt is printed, indicating that it
-/// expects an in-game command. Otherwise, no prompt is printed, indicating
-/// that it expects a meta-command (such as "Do you really want to quit?")
-///
-/// The buffer is always at least 78 characters.
-#[no_mangle]
-#[cfg(unix)]
-pub extern "C" fn rdline_(buffer: *mut u8, who: c_int) {
-    trace!("rdline_()");
-
-    if buffer.is_null() {
-        error!("Null buffer given to rdline_()");
-        exit_();
-    }
-
-    // I don't understand why this doesn't have to be "let mut typed_buffer;"
-    let typed_buffer;
-    unsafe { typed_buffer = slice::from_raw_parts_mut(buffer, 78); }
-
-    let mut input = String::new();
-
-    loop {
-
-        // Print the prompt.
-        let converted_who: PromptType = who.into();
-        info!("converted_who: {:?}", &converted_who);
-        if converted_who == PromptType::InCharacter {
-            info!("Printing prompt");
-            print!(">");
-            io::stdout().flush().unwrap();
-        }
-
-        // Read from stdin until a newline.
-        input.clear();
-        let res = io::stdin().read_line(&mut input);
-        if let Err(err) = res {
-            error!("Error reading string: {:?}", &err);
-            exit_();
-        } else {
-            debug!("Read string: {:?}", &input);
-        }
-
-        // Update some global variables.
-        trace!("calling more_input()");
-        unsafe { ffi::more_input(); }
-
-        // If there was no input, try again.
-        if input.len() == 0 {
-            continue;
-        }
-
-        // Check if this is a system command.
-        if &input[0..1] == "!" {
-            // Forward this command to the shell, minus the first char.
-            trace!("Calling shell with command {:?}", &input[1..]);
-            let res = Command::new("bash")
-                .arg("-c")
-                .arg(&input[1..])
-                .stdout(Stdio::inherit())
-                .stderr(Stdio::inherit())
-                .stdin(Stdio::inherit())
-                .spawn();
-                
-            // Wait for the child to finish. Ignore the exit code.
-            match res {
-                Ok(mut child) => {
-                    let status = child.wait();
-                    match status {
-                        Ok(code) => info!("Subprocess exited with code: {}", &code),
-                        Err(err) => info!("Error while waiting for subprocess: {:?}", &err)
-                    }
-                },
-                Err(err) => info!("Error spawning subprocess: {:?}", &err)
+    // Wait for the child to finish. Ignore the exit code.
+    match res {
+        Ok(mut child) => {
+            let status = child.wait();
+            match status {
+                Ok(code) => info!("Subprocess exited with code: {}", &code),
+                Err(err) => info!("Error while waiting for subprocess: {:?}", &err),
             }
-
-            // Read more.
-            continue;
         }
-
-        break;
+        Err(err) => info!("Error spawning subprocess: {:?}", &err),
     }
-
-    // Convert the string to uppercase.
-    input.make_ascii_uppercase();
-
-    // Move up to 77 bytes into the buffer, after trimming whitespace.
-    input.truncate(77);
-    let trimmed = input.trim_right();
-    let temp_vec = vec![0];
-    let iter = trimmed.bytes().chain(temp_vec.into_iter());
-    for (index, c) in iter.enumerate() {
-        typed_buffer[index] = c;
-    }
-    
-    // Modify some global state.
-    trace!("Modifying global variable prsvec_.prscon");
-    unsafe { ffi::prsvec_.prscon = 1; }
-
-    // Return via the mutated buffer.
 }
 
-
-/// Exit the game using exit(0),
-#[no_mangle]
-pub extern "C" fn exit_() -> ! {
-    trace!("exit_()");
-
+/// Does some cleanup and exits the program.
+pub fn exit_program() -> ! {
     println!("The game is over.\n");
     io::stdout().flush().unwrap();
-    
+
+    info!("Exiting game.");
     log::logger().flush();
 
     process::exit(0)
 }
 
+/// Saves the line of input in a text file, so that it can be replayed.
+fn record_move(player_move: &str) {
+    // Note: This is a single threaded
+    if let Some(ref mut file) = *PLAYBACK_FILE.try_lock().unwrap() {
+        write!(file, "{}\n", &player_move).unwrap();
+    }
+}
+
 fn main() {
-    CombinedLogger::init(
-        vec![
-            WriteLogger::new(LevelFilter::Debug, Config::default(),
-                File::create("log.txt").unwrap()),
-            WriteLogger::new(LevelFilter::Trace, Config::default(),
-                File::create("trace_log.txt").unwrap()),
-        ]
-    ).unwrap();
+    CombinedLogger::init(vec![
+        WriteLogger::new(
+            LevelFilter::Debug,
+            Config::default(),
+            File::create("log.txt").unwrap(),
+        ),
+        WriteLogger::new(
+            LevelFilter::Trace,
+            Config::default(),
+            File::create("trace_log.txt").unwrap(),
+        ),
+    ]).unwrap();
 
     trace!("Starting c_main()");
 

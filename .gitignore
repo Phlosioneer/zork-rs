@@ -1,6 +1,6 @@
 *.o
 zork
-
+/playback
 /target
 **/*.rs.bk
 *log.txt
