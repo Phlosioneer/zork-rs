@@ -14,7 +14,6 @@ pub mod ffi;
 pub mod replacement;
 
 use replacement::PromptType;
-use simplelog::{CombinedLogger, Config, LevelFilter, WriteLogger};
 use std::fs::{self, File};
 use std::io::{self, Write};
 use std::path::Path;
@@ -149,23 +148,3 @@ fn record_move(player_move: &str) {
     }
 }
 
-fn main() {
-    CombinedLogger::init(vec![
-        WriteLogger::new(
-            LevelFilter::Debug,
-            Config::default(),
-            File::create("log.txt").unwrap(),
-        ),
-        WriteLogger::new(
-            LevelFilter::Trace,
-            Config::default(),
-            File::create("trace_log.txt").unwrap(),
-        ),
-    ]).unwrap();
-
-    trace!("Starting c_main()");
-
-    unsafe {
-        ffi::c_main();
-    }
-}
