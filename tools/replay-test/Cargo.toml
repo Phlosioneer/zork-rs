@@ -1,0 +1,11 @@
+[package]
+name = "replay-test"
+version = "0.1.0"
+authors = ["Phlosioneer <mattmdrr2@gmail.com>"]
+
+[dependencies]
+timeout-readwrite = "0.1"
+regex = "0.2"
+itertools = "0.7"
+log = "0.4"
+simplelog = "0.5"

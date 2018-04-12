@@ -14,7 +14,7 @@ extern "C" {
     pub fn wizard() -> Logical;
 
     pub fn more_init();
-    pub fn more_output(out: *const c_char);
+    //pub fn more_output(out: *const c_char);
     pub fn more_input();
 
     pub fn bug_(a1: c_int, a2: c_int);
@@ -118,8 +118,12 @@ extern "C" {
 
     ////////////
     // np.h
-    pub static lex_:
+    pub static mut lex_:
         extern "C" fn(a1: *mut c_char, a2: *mut c_int, a3: *mut c_int, a4: Logical) -> Logical;
+
+    ////////////
+    // supp.c
+    pub static mut coutput: c_int;
 
 }
 

@@ -82,6 +82,7 @@ logical nl;
     x = ((- x) - 1) * 8;
     if (fseek(dbfile, x + (long)rmsg_1.mrloc, SEEK_SET) == EOF) {
 	fprintf(stderr, "Error seeking database loc %ld\n", x);
+	fflush(stderr);
 	exit_();
     }
 
@@ -94,6 +95,7 @@ logical nl;
 	i = getc(dbfile);
 	if (i == EOF) {
 	    fprintf(stderr, "Error reading database loc %ld\n", x);
+		fflush(stderr);
 	    exit_();
 	}
 	i ^= zkey[x & 0xf] ^ (x & 0xff);
@@ -101,7 +103,7 @@ logical nl;
 	if (i == '\0')
 	    break;
 	else if (i == '\n') {
-	    putchar('\n');
+	    supp_putchar('\n');
 	    if (nl)
 		more_output(NULL);
 	}
@@ -112,17 +114,18 @@ logical nl;
 	    rspsb2nl_(y, 0, 0, 0);
 	    if (fseek(dbfile, iloc, SEEK_SET) == EOF) {
 		fprintf(stderr, "Error seeking database loc %ld\n", iloc);
+		fflush(stderr);
 		exit_();
 	    }
 	    y = z;
 	    z = 0;
 	}
 	else
-	    putchar(i);
+	    supp_putchar(i);
     }
 
     if (nl)
-	putchar('\n');
+	supp_putchar('\n');
 }
 
 /* OBJACT-- APPLY OBJECTS FROM PARSE VECTOR */
@@ -174,7 +177,7 @@ integer b;
     /* Local variables */
 
     more_output(NULL);
-    printf("PROGRAM ERROR %d, PARAMETER=%d\n", a, b);
+    supp_printf("PROGRAM ERROR %d, PARAMETER=%d\n", a, b);
 
     if (debug_1.dbgflg != 0) {
 	return;

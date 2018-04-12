@@ -4,3 +4,6 @@ zork
 /target
 **/*.rs.bk
 *log.txt
+/test/replay_test
+/tools/*/target
+/tools/replay-test/playback

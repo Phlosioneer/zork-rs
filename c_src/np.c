@@ -30,7 +30,7 @@ L5:
     }
 /* 						!SEE WHO TO PROMPT FOR. */
 L10:
-    printf(">");
+    supp_printf(">");
 /* 						!PROMPT FOR GAME. */
 L90:
     (void) fflush(stdout);

@@ -115,16 +115,16 @@ logical flg;
     }
 /* 						!ENDGAME? */
     more_output(NULL);
-    printf("Your score ");
+    supp_printf("Your score ");
     if (flg)
-	printf("would be");
+	supp_printf("would be");
     else
-	printf("is");
-    printf(" %d [total of %d points], in %d move", as, state_1.mxscor,
+	supp_printf("is");
+    supp_printf(" %d [total of %d points], in %d move", as, state_1.mxscor,
 	    state_1.moves);
     if (state_1.moves != 1)
-	printf("s");
-    printf(".\n");
+	supp_printf("s");
+    supp_printf(".\n");
 
     for (i = 1; i <= 10; ++i) {
 	if (as * 20 / state_1.mxscor >= rank[i - 1]) {
@@ -139,12 +139,12 @@ L50:
 
 L60:
     more_output(NULL);
-    printf("Your score in the endgame ");
+    supp_printf("Your score in the endgame ");
     if (flg)
-	printf("would be");
+	supp_printf("would be");
     else
-	printf("is");
-    printf(" %d [total of %d points], in %d moves.\n", state_1.egscor,
+	supp_printf("is");
+    supp_printf(" %d [total of %d points], in %d moves.\n", state_1.egscor,
 	   state_1.egmxsc, state_1.moves);
 
     for (i = 1; i <= 5; ++i) {

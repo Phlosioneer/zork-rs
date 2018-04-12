@@ -1,6 +1,7 @@
 /* supp.c -- support routines for dungeon */
 
 #include <stdio.h>
+#include <stdarg.h>
 
 #ifdef unix
 #include <sys/types.h>
@@ -28,13 +29,28 @@ extern int rand P((void));
 extern time_t time P((time_t *));
 extern struct tm *localtime ();
 
+// Wrapper for printf. It will flush stdout every call.
+void supp_printf(const char* fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	vprintf(fmt, args);
+	va_end(args);
+
+	fflush(stdout);
+}
+
+void supp_putchar(char c) {
+	putchar(c);
+	fflush(stdout);
+}
+
 /* Terminate the game */
 
 
 #ifndef AS_RUST_LIB
 void exit_()
 {
-    fprintf(stderr, "The game is over.\n");
+    supp_printf(stderr, "The game is over.\n");
     exit(0);
 }
 #endif /* AS_RUST_LIB */
@@ -138,8 +154,8 @@ extern int setupterm P((const char *, int, int*));
  * terminal has).
  */
 
-static integer crows;
-static integer coutput;
+integer crows;
+integer coutput;
 
 void more_init()
 {
@@ -200,6 +216,7 @@ void more_init()
 #endif /* ! MORE_NONE */
 }
 
+#ifndef AS_RUST_LIB
 /* The program wants to output a line to the terminal.  If z is not
  * NULL it is a simple string which is output here; otherwise it
  * needs some sort of formatting, and is output after this function
@@ -213,7 +230,7 @@ const char *z;
 /* pager code remarked out to allow streamed input and output */
 /*
      if (crows > 0  &&  coutput > crows - 2) {
-	printf("Press return to continue: ");
+	supp_printf("Press return to continue: ");
 	(void) fflush(stdout);
 	while (getchar() != '\n')
 	    ;
@@ -221,10 +238,12 @@ const char *z;
     }
 */
     if (z != NULL)
-	printf("%s\n", z);
+	supp_printf("%s\n", z);
 
     coutput++;
 }
+
+#endif /* AS_RUST_LIB */
 
 /* The terminal is waiting for input (clear the number of output lines) */
 

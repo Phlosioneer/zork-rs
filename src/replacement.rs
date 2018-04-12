@@ -1,5 +1,8 @@
-use libc::c_int;
+
+use libc::{c_int, c_char};
 use std::slice;
+use std::io::{self, Write};
+use std::ffi::CStr;
 
 use ffi;
 use {exit_program, read_line};
@@ -28,11 +31,7 @@ pub extern "C" fn rdline_(buffer: *mut u8, who: c_int) {
         exit_();
     }
 
-    // i don't understand why this doesn't have to be "let mut typed_buffer;"
-    let typed_buffer;
-    unsafe {
-        typed_buffer = slice::from_raw_parts_mut(buffer, 78);
-    }
+    let typed_buffer = unsafe { slice::from_raw_parts_mut(buffer, 78) };
 
     let mut input = read_line(who.into());
 
@@ -45,12 +44,30 @@ pub extern "C" fn rdline_(buffer: *mut u8, who: c_int) {
     }
 
     // Modify some global state.
+    // No idea what this does.
     trace!("Modifying global variable prsvec_.prscon");
     unsafe {
         ffi::prsvec_.prscon = 1;
     }
 
     // Return via the mutated buffer.
+}
+
+// Prints a given string.
+#[no_mangle]
+pub extern "C" fn more_output(out: *const c_char) {
+    // If out is not null, print it and a newline.
+    if !out.is_null() {
+        let string = unsafe { CStr::from_ptr(out) };
+        println!("{}", &string.to_str().unwrap());
+        io::stdout().flush().unwrap();
+    }
+
+    // No idea what this does.
+    trace!("Modifying global variable coutput");
+    unsafe {
+        ffi::coutput += 1;
+    }
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]

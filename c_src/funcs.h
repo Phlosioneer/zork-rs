@@ -44,6 +44,9 @@ typedef int logical;
 #define min(a,b) ((a) <= (b) ? (a) : (b))
 #define max(a,b) ((a) >= (b) ? (a) : (b))
 
+void supp_printf(const char* fmt, ...);
+void supp_putchar(char c);
+
 extern logical
 	protected P((void)),
 	wizard P((void));
