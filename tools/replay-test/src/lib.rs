@@ -397,6 +397,11 @@ fn read_from_child<R: Read>(child: &mut R) ->
 
         let converted_buffer = String::from_utf8(buffer[0..count].to_vec()).unwrap();
         buffer_str.push_str(&converted_buffer);
+
+        if converted_buffer.ends_with(">") {
+            debug!("Prompt found.");
+            break;
+        }
     }
     
     debug!("Read from child: \n{:?}", &buffer_str);
