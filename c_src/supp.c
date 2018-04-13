@@ -39,6 +39,7 @@ void supp_printf(const char* fmt, ...) {
 	fflush(stdout);
 }
 
+#ifndef AS_RUST_LIB
 void supp_putchar(char c) {
 	putchar(c);
 	fflush(stdout);
@@ -47,7 +48,6 @@ void supp_putchar(char c) {
 /* Terminate the game */
 
 
-#ifndef AS_RUST_LIB
 void exit_()
 {
     supp_printf(stderr, "The game is over.\n");
@@ -72,6 +72,7 @@ integer *secptr;
 	*minptr = tmptr->tm_min;
 	*secptr = tmptr->tm_sec;
 }
+
 /* Random number generator */
 
 integer rnd_(maxval)
@@ -243,7 +244,6 @@ const char *z;
     coutput++;
 }
 
-#endif /* AS_RUST_LIB */
 
 /* The terminal is waiting for input (clear the number of output lines) */
 
@@ -251,3 +251,4 @@ void more_input()
 {
     coutput = 0;
 }
+#endif /* AS_RUST_LIB */

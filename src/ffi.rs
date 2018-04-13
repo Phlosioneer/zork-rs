@@ -1,3 +1,4 @@
+
 use libc::{c_char, c_int};
 
 #[repr(C)]
@@ -13,9 +14,9 @@ extern "C" {
     pub fn protected() -> Logical;
     pub fn wizard() -> Logical;
 
-    pub fn more_init();
+    //pub fn more_init();
     //pub fn more_output(out: *const c_char);
-    pub fn more_input();
+    //pub fn more_input();
 
     pub fn bug_(a1: c_int, a2: c_int);
     pub fn cevapp_(a1: c_int);

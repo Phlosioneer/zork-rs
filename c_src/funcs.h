@@ -45,6 +45,10 @@ typedef int logical;
 #define max(a,b) ((a) >= (b) ? (a) : (b))
 
 void supp_printf(const char* fmt, ...);
+
+#ifdef AS_RUST_LIB
+extern
+#endif
 void supp_putchar(char c);
 
 extern logical

@@ -14,7 +14,7 @@ fn test_replays() {
 
     // Setup
     let dirs = Dirs::new(".").unwrap();
-    TermLogger::init(LevelFilter::Trace, Config::default());
+    TermLogger::init(LevelFilter::Trace, Config::default()).unwrap();
     
     // Get all the replay tests.
     let replays = replay_test::parse_replay_files(&dirs).unwrap();
@@ -32,7 +32,7 @@ fn test_replay(in_path: &PathBuf, out_path: &PathBuf, dirs: &Dirs) {
     
     // Read the replay output.
     let mut expected_output = String::new();
-    File::open(&out_path).unwrap().read_to_string(&mut expected_output);
+    File::open(&out_path).unwrap().read_to_string(&mut expected_output).unwrap();
 
     // Compare them.
     if output != expected_output {
