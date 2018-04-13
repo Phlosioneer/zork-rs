@@ -280,14 +280,15 @@ pub fn run_playback_test(playback_path: &PathBuf, dirs: &Dirs) ->
     let mut playback = String::new();
     let mut playback_file = File::open(&playback_path)?;
     playback_file.read_to_string(&mut playback)?;
-
-    // Se need to append a "yes" to the end of the playback, to answer the "Do
-    // you really want to quit?" prompt.
-    playback.push_str("\nquit\nyes");
     let playback = playback;
 
+
     // Split the string into an array of lines.
-    let lines: Vec<&str> = playback.split("\n").collect();
+    let mut lines: Vec<&str> = playback.split("\n").collect();
+    if lines[lines.len() - 1] == "" {
+        let len = lines.len();
+        lines.remove(len - 1);
+    }
 
     // Run zork to get the output.
     let mut child = Command::new(&dirs.executable_path)
@@ -333,6 +334,36 @@ pub fn run_playback_test(playback_path: &PathBuf, dirs: &Dirs) ->
         debug!("Sending line: {:?}", &line);
         out_buffer.push_str(&line_with_newline);
         write_to_child(&mut stdin, &line_with_newline)?;
+    }
+    
+    // Tell the program to quit. It's okay if we get a BrokenPipe error here;
+    // it just means the program quit on its own.
+    let last_lines = vec!["quit\n","yes\n"];
+    for line in last_lines {
+        let maybe_output = read_from_child(&mut stdout);
+        match maybe_output {
+            Ok(output) => out_buffer.push_str(&output),
+            Err(err) => {
+                if err.kind() == io::ErrorKind::BrokenPipe {
+                    debug!("Child closed itself. (stdout first)");
+                    break;
+                } else {
+                    return Err(err);
+                }
+            }
+        }
+
+        debug!("Sending line: {:?}", &line);
+        out_buffer.push_str(&line);
+        let res = write_to_child(&mut stdin, &line);
+        if let Err(err) = res {
+            if err.kind() == io::ErrorKind::BrokenPipe {
+                debug!("Child closed itself. (stdin first)");
+                break;
+            } else {
+                return Err(err);
+            }
+        }
     }
 
     // Read anything else from the child.
@@ -398,7 +429,7 @@ fn read_from_child<R: Read>(child: &mut R) ->
         let converted_buffer = String::from_utf8(buffer[0..count].to_vec()).unwrap();
         buffer_str.push_str(&converted_buffer);
 
-        if converted_buffer.ends_with(">") {
+        if buffer_str.ends_with("\n>") {
             debug!("Prompt found.");
             break;
         }
