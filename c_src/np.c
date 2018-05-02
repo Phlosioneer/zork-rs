@@ -13,7 +13,14 @@
 
 extern int system P((const char *));
 
-static logical lex_ P((char *, integer *, integer *, logical));
+//#ifdef AS_RUST_LIB
+//extern
+//#else
+static
+//#endif /* AS_RUST_LIB */
+logical lex_ P((char *, integer *, integer *, logical));
+
+
 #ifndef AS_RUST_LIB
 void rdline_(buffer, who)
 char *buffer;
@@ -151,8 +158,8 @@ integer o5;
 /* LEX-	LEXICAL ANALYZER */
 
 /* THIS ROUTINE DETAILS ON BIT 1 OF PRSFLAG */
-
-static logical lex_(inbuf, outbuf, op, vbflag)
+//#ifndef AS_RUST_LIB
+logical lex_(inbuf, outbuf, op, vbflag)
 char *inbuf;
 integer *outbuf;
 integer *op;
@@ -160,6 +167,10 @@ logical vbflag;
 {
     /* Initialized data */
 
+	// Notes:
+	// 	'A' - 1 = '@' = 
+	// 	'1' - 31 = (char)18 = ?
+	// 	'-' - 27 = (char)18 = ?
     static const char dlimit[9] = { 'A', 'Z', 'A' - 1,
 				    '1', '9', '1' - 31,
 				    '-', '-', '-' - 27 };
@@ -290,3 +301,4 @@ L6000:
 /* 						!YES, ADV OP. */
 
 } /* lex_ */
+//#endif /* ! AS_RUST_LIB */

@@ -38,7 +38,13 @@ EXTERN struct {
 #define last_1 last_
 
 EXTERN struct {
-    integer winner, here;
+    integer winner;
+
+	// current_room
+	// The player's current room.
+   	integer here;
+
+	// tel_flag
     logical telflg;
 } play_;
 
@@ -106,9 +112,50 @@ EXTERN const struct {
 #define xsrch_1 xsrch_
 
 EXTERN struct {
-    integer olnt, odesc1[220], odesc2[220], odesco[220], oactio[220], oflag1[
-	    220], oflag2[220], ofval[220], otval[220], osize[220], ocapac[220]
-	    , oroom[220], oadv[220], ocan[220], oread[220];
+    // "lnt" == "limit"?
+	integer olnt;
+	
+	// description_1
+	integer odesc1[220];
+
+	// description_2
+	integer odesc2[220]; 
+
+	// desco
+	integer odesco[220]; 
+
+	// action
+	integer oactio[220]; 
+
+	// flags_1
+	integer oflag1[220]; 
+
+	// flags_2
+	integer oflag2[220]; 
+
+	// fval
+	integer ofval[220];
+
+	// tval
+	integer otval[220]; 
+
+	// size
+	integer osize[220]; 
+
+	// capacity
+	integer ocapac[220]; 
+
+	// room
+	integer oroom[220];
+
+	// adv
+	integer oadv[220];
+
+	// can_reach
+   	integer ocan[220]; 
+
+	// read
+	integer oread[220];
 } objcts_;
 
 #define objcts_1 objcts_
@@ -138,7 +185,7 @@ EXTERN struct {
 #define TOOLBT (4)
 #define TURNBT (2)
 #define ONBT (1)
-#define FINDBT (32768)
+#define FINDBT (32768)	// 1 << 15
 #define SLEPBT (16384)
 #define SCRDBT (8192)
 #define TIEBT (4096)
@@ -207,8 +254,31 @@ EXTERN const struct {
 #define cindex_1 cindex_
 
 EXTERN struct {
-    integer alnt, aroom[4], ascore[4], avehic[4], aobj[4], aactio[4], astren[
-	    4], aflag[4];
+	// "lnt" == "limit"?
+    integer alnt;
+
+	// room
+	// The current room for this adventurer
+	integer aroom[4];
+
+	// score
+	integer ascore[4]; 
+
+	// vehicle
+	integer avehic[4]; 
+
+	// current_it
+	// The current object referred to by the word "it"
+	integer aobj[4];
+
+	// action
+	integer aactio[4]; 
+
+	// strength
+	integer astren[4]; 
+
+	// flags
+	integer aflag[4];
 } advs_;
 
 #define advs_1 advs_
@@ -320,7 +390,8 @@ EXTERN const struct {
 #define xpars_1 xpars_
 
 EXTERN struct {
-    integer mbase, strbit;
+    integer mbase;
+   	integer strbit;
 } star_;
 
 #define star_1 star_

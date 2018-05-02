@@ -5,12 +5,15 @@ extern crate log;
 extern crate zork;
 extern crate replay_test;
 extern crate simplelog;
+extern crate tempfile;
 
 use std::path::PathBuf;
 use std::fs::File;
-use std::io::Read;
+use std::io::{self, Read, Write};
+use std::process::{Command, Stdio};
 use simplelog::{TermLogger, LevelFilter, Config};
 use replay_test::Dirs;
+use tempfile::NamedTempFile;
 
 #[test]
 fn test_replays() {
@@ -50,8 +53,42 @@ fn test_replay(in_path: &PathBuf, out_path: &PathBuf, dirs: &Dirs) {
 
     // Compare them.
     if output != expected_output {
-        panic!("Output mismatch; expected: {:?}\n\n\nfound: {:?}", expected_output, output);
+        // Try to make a pretty diff.
+        if output.len() > 50 {
+            match run_diff(&dirs, &output, &expected_output) {
+                // If there was an error, fall through.
+                Err(e) => println!("Error while creating diff: {:?}", e),
+                Ok(diff_output) => {
+                    println!("Output mismatch; diff:\n{}", diff_output);
+                    panic!("Output mismatch");
+                }
+            }
+        }   
+
+        println!("Output mismatch; expected:\n{}\n\n\nfound:\n{}", expected_output, output);
+        panic!("Output mismatch");
     }
+}
+
+fn run_diff(dirs: &Dirs, expected: &str, actual: &str) -> Result<String, io::Error> {
+    let mut expected_temp = NamedTempFile::new_in(&dirs.root_dir)?;
+    let mut actual_temp = NamedTempFile::new_in(&dirs.root_dir)?;
+
+    write!(expected_temp, "{}", expected)?;
+    write!(actual_temp, "{}", actual)?;
+
+    let child_output = Command::new("git")
+        .arg("diff")
+        .arg("--no-index")
+        .arg(actual_temp.path())
+        .arg(expected_temp.path())
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .output()?;
+    
+
+    return Ok(String::from_utf8_lossy(&child_output.stdout).into_owned());
 }
 
 

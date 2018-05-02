@@ -449,7 +449,7 @@ EXTERN const integer avoc[]
 		31101, 2325,	// SQUARE
 			109,
 			127,
-		5281, 4000,		// CLABT (?)
+		5281, 40000,	// CLAY
 			109,
 		30729, 23400,	// SHINY
 			110,
@@ -543,7 +543,7 @@ EXTERN const integer avoc[]
 			203,
 		23018, 32320,	// NORTH
 			205,
-		23018, 32325,	// NORTHEAST
+		23018, 32325,	// NORTHERN
 			205,
 		31021, 32320,	// SOUTH
 			206,

@@ -13,6 +13,8 @@ integer ri;
     /* Initialized data */
 
     const integer mxnop = 39;
+
+	// This is the maximum ID value for a simple verb.
     const integer mxsmp = 99;
 
     /* System generated locals */
