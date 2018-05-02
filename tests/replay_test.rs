@@ -1,4 +1,7 @@
 
+#[macro_use]
+extern crate log;
+
 extern crate zork;
 extern crate replay_test;
 extern crate simplelog;
@@ -15,12 +18,17 @@ fn test_replays() {
     // Setup
     let dirs = Dirs::new(".").unwrap();
     TermLogger::init(LevelFilter::Trace, Config::default()).unwrap();
-    
+    info!("Test log file location: {:?}", dirs.recent_log_file());
+
     // Get all the replay tests.
-    let replays = replay_test::parse_replay_files(&dirs).unwrap();
+    let replay_map = replay_test::parse_replay_files(&dirs).unwrap();
+
+    // Sort the replays into a deterministic order.
+    let mut sorted_replays: Vec<_> = replay_map.into_iter().collect();
+    sorted_replays.sort_unstable_by_key(|&(key, _)| key);
 
     // Test with every replay.
-    for (in_path, out_path) in replays.values() {
+    for (_, (in_path, out_path)) in sorted_replays {
         let new_dirs = Dirs::from_dirs(&dirs).unwrap();
         test_replay(&in_path, &out_path, &new_dirs);
     }
@@ -28,8 +36,14 @@ fn test_replays() {
 
 fn test_replay(in_path: &PathBuf, out_path: &PathBuf, dirs: &Dirs) {
     // Run the test.
-    let output = replay_test::run_playback_test(&in_path, &dirs).unwrap();
+    let output_res = replay_test::run_playback_test(&in_path, &dirs);
     
+    // Copy the output logs over, before running anything that might panic.
+    replay_test::copy_logs(&dirs).unwrap();
+
+    let output = output_res.unwrap();
+
+
     // Read the replay output.
     let mut expected_output = String::new();
     File::open(&out_path).unwrap().read_to_string(&mut expected_output).unwrap();

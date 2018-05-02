@@ -170,9 +170,9 @@ impl Dirs {
         self.zork_run_dir.as_ref().join("trace_log.txt")
     }
 
-    // Get the location of the log file of the most recently failed test.
-    pub fn failing_log_file(&self) -> PathBuf {
-        self.root_dir.join("test_failure_log.txt")
+    // Get the location of the log file of the most recently run test.
+    pub fn recent_log_file(&self) -> PathBuf {
+        self.root_dir.join("test_log.txt")
     }
 }
 
@@ -589,6 +589,16 @@ fn find_missing_replay_file(in_paths: &Vec<PathBuf>, out_paths: &Vec<PathBuf>) -
     }
 
     unreachable!()
+}
+
+// This function copies the logs from a test run out of its temp dir.
+pub fn copy_logs(dirs: &Dirs) -> Result<()> {
+    let from = dirs.temp_log_file();
+    let to = dirs.recent_log_file();
+    
+    fs::copy(from, to)?;
+
+    Ok(())
 }
 
 #[derive(Debug, Fail)]
