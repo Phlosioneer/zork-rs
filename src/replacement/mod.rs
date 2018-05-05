@@ -1,6 +1,7 @@
 
 pub mod supp;
 pub mod np;
+//pub mod vocab;
 
 use libc::c_int;
 

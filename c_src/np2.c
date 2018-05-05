@@ -9,13 +9,15 @@
 #include "parse.h"
 
 #ifndef AS_RUST_LIB
+
+
+#ifndef AS_RUST_LIB
 static 
 #endif
 logical thisit_ P((integer, integer, integer, integer));
 
 /* THIS ROUTINE DETAILS ON BIT 3 OF PRSFLG */
 
-#ifndef AS_RUST_LIB
 integer getobj_(oidx, aidx, spcobj)
     integer oidx;
     integer aidx;
@@ -148,7 +150,6 @@ L1500:
     return ret_val;
 } /* getobj_ */
 
-#endif /* !AS_RUST_LIB */
 
 /* SCHLST-- SEARCH FOR OBJECT */
 
@@ -254,6 +255,8 @@ L2000:
 
 } /* schlst_ */
 
+#endif /* !AS_RUST_LIB */
+
 /* THISIT-- VALIDATE OBJECT VS DESCRIPTION */
 
 /* DECLARATIONS */
@@ -322,3 +325,5 @@ L500:
     ret_val = TRUE_;
     return ret_val;
 } /* thisit_ */
+
+

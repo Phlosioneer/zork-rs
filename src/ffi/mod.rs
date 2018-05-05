@@ -1,11 +1,17 @@
 
 use libc::{c_char, c_int};
+use std::ops::Range;
 use core;
+
+pub mod objects;
+use self::objects::{Objects, GlobalObjects};
 
 pub use self::prsvec_ as parse_vec;
 pub use self::objcts_ as objects;
 pub use self::play_ as player;
 pub use self::advs_ as adventurers;
+pub use self::star_ as global_items;
+
 
 #[repr(C)]
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -57,6 +63,9 @@ extern "C" {
     // The buffer is always at least 78 characters.
     //pub fn rdline_(buffer: *mut c_char, who: c_int);
 
+    // np2.c
+    //pub fn schlst_(a1: c_int, a2: c_int, a3: c_int, a4: c_int, a5: c_int, a6: c_int) -> c_int;
+
     pub fn rspeak_(a1: c_int);
     pub fn rspsb2_(a1: c_int, a2: c_int, a3: c_int);
     pub fn rspsub_(a1: c_int, a2: c_int);
@@ -72,7 +81,6 @@ extern "C" {
     pub fn fights_(a1: c_int, a2: Logical) -> c_int;
     pub fn fwim_(a1: c_int, a2: c_int, a3: c_int, a4: c_int, a5: c_int, a6: Logical) -> c_int;
     pub fn getobj_(a1: c_int, a2: c_int, a3: c_int) -> c_int;
-    pub fn schlst_(a1: c_int, a2: c_int, a3: c_int, a4: c_int, a5: c_int, a6: c_int) -> c_int;
     pub fn mrhere_(a1: c_int) -> c_int;
     pub fn oactor_(a1: c_int) -> c_int;
     pub fn rnd_(a1: c_int) -> c_int;
@@ -127,7 +135,7 @@ extern "C" {
     pub static mut objcts_: Objects;
     pub static mut play_: Player;
     pub static mut advs_: Adventurers;
-    pub static mut star_: StarStruct;
+    pub static mut star_: GlobalObjects;
 
     ///////////////////////////////////////////////////////////////////////////
     // Defined elsewhere
@@ -144,14 +152,6 @@ extern "C" {
     // supp.c
     pub static mut coutput: c_int;
 
-}
-
-// TODO: ???
-#[repr(C)]
-#[derive(Clone, Debug)]
-pub struct StarStruct {
-    pub mbase: c_int,
-    pub strbit: c_int
 }
 
 // Info about the player.
@@ -250,128 +250,6 @@ impl AdventurerEntry {
     }
 }
 
-// All the metadata about all objects. Stored as parallel arrays.
-#[repr(C)]
-pub struct Objects {
-    limit: c_int,
-    pub description_1: [c_int; 220],
-    pub description_2: [c_int; 220],
-    pub desco: [c_int; 220],
-    pub action: [c_int; 220],
-    pub flags_1: [c_int; 220],
-    pub flags_2: [c_int; 220],
-    pub fval: [c_int; 220],
-    pub tval: [c_int; 220],
-
-    // The object's size.
-    pub size: [c_int; 220],
-
-    // The amount the object can hold, if it can hold anything.
-    pub capacity: [c_int; 220],
-
-    // The room the object is in.
-    pub room: [c_int; 220],
-    pub adv: [c_int; 220],
-    pub can_reach: [c_int; 220],
-    pub read: [c_int; 220]
-}
-
-// All the metadata about one object.
-#[derive(Debug, Clone)]
-pub struct ObjectEntry {
-    index: usize,
-
-    pub description_1: c_int,
-    pub description_2: c_int,
-    pub desco: c_int,
-    pub action: c_int,
-    pub flags_1: c_int,
-    pub flags_2: c_int,
-    pub fval: c_int,
-    pub tval: c_int,
-
-    // The object's size.
-    pub size: c_int,
-
-    // The amount the object can hold, if it can hold anything.
-    pub capacity: c_int,
-
-    // The room the object is in.
-    pub room: c_int,
-    pub adv: c_int,
-    pub can_reach: c_int,
-    pub read: c_int
-}
-
-impl Objects {
-    /// Gets an object by its id. Object ids start at 1.
-    pub fn get(&self, id: usize) -> ObjectEntry {
-        if id > self.len() {
-            error!("Object id {} is greater than object count ({}).", id, self.len());
-            core::exit_program();
-        }
-        if id == 0 {
-            error!("Object id cannot be 0.");
-            core::exit_program();
-        }
-
-        let index = id - 1;
-
-        ObjectEntry {
-            index,
-
-            description_1: self.description_1[index],
-            description_2: self.description_2[index],
-            desco: self.desco[index],
-            action: self.action[index],
-            flags_1: self.flags_1[index],
-            flags_2: self.flags_2[index],
-            fval: self.fval[index],
-            tval: self.tval[index],
-            size: self.size[index],
-            capacity: self.capacity[index],
-            room: self.room[index],
-            adv: self.adv[index],
-            can_reach: self.can_reach[index],
-            read: self.read[index]
-        }
-    }
-
-    pub fn set(&mut self, values: &ObjectEntry) {
-        let index = values.index;
-
-        self.description_1[index] = values.description_1;
-        self.description_2[index] = values.description_2;
-        self.desco[index] = values.desco;
-        self.action[index] = values.action;
-        self.flags_1[index] = values.flags_1;
-        self.flags_2[index] = values.flags_2;
-        self.fval[index] = values.fval;
-        self.tval[index] = values.tval;
-        self.size[index] = values.size;
-        self.capacity[index] = values.capacity;
-        self.room[index] = values.room;
-        self.adv[index] = values.adv;
-        self.can_reach[index] = values.can_reach;
-        self.read[index] = values.read;
-    }
-
-    pub fn len(&self) -> usize {
-        self.limit as usize
-    }
-}
-
-impl ObjectEntry {
-    // This bit is set if the object can be reached (by the player for grabbing).
-    pub fn get_find_bit(&self) -> bool {
-        c_int_to_bool(self.flags_2 & (1 << 15))
-    }
-
-    // This bit is set if the object is visible.
-    pub fn get_visible_bit(&self) -> bool {
-        c_int_to_bool(self.flags_1 & (1 << 15))
-    }
-}
 
 // A structure that stores info during parsing.
 #[repr(C)]

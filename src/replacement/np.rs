@@ -3,6 +3,7 @@ use std::slice;
 use libc::c_int;
 use replacement::supp;
 use ffi;
+use ffi::objects::ObjectEntry;
 use core;
 
 /// read a line of input into the buffer. the 'who' parameter is either 0
@@ -50,16 +51,18 @@ pub extern "C" fn rdline_(buffer: *mut u8, who: c_int) {
 // The id is negative if multiple objects matching that description were found.
 // It returns the special value -10,000 sometimes // TODO: When...?
 //
-// object_name is the index of a word entry in the ovoc array, NOT an object
+// noun is the index of a word entry in the ovoc array, NOT an object
 // id!
 #[no_mangle]
-pub extern "C" fn getobj_(object_name: c_int, aidx: c_int, spcobj: c_int) -> c_int {
-    trace!("getobj_({}, {}, {})", object_name, aidx, spcobj);
+#[allow(non_snake_case)]
+pub extern "C" fn getobj_(noun: c_int, adjective: c_int, special_object: c_int) -> c_int {
+    trace!("getobj_({}, {}, {})", noun, adjective, special_object);
+
+    let CHOMP_RETURN = -10000;
 
     let adventurers = unsafe { &ffi::adventurers };
     let player = unsafe { ffi::player.clone() };
     let objects = unsafe { &ffi::objects };
-    let star_struct = unsafe { ffi::star_.clone() };
     
     let current_adventurer = adventurers.get(player.winner as usize);
 
@@ -70,7 +73,7 @@ pub extern "C" fn getobj_(object_name: c_int, aidx: c_int, spcobj: c_int) -> c_i
     debug!("vehicle: {:?}", vehicle);
 
     let mut chomp = false;
-    let mut object_id = 0;
+    let mut ret: Option<u32> = None;
 
     // Check if the current room is lit.
     let is_lit: bool = unsafe { ffi::lit_(player.current_room).into() };
@@ -78,12 +81,10 @@ pub extern "C" fn getobj_(object_name: c_int, aidx: c_int, spcobj: c_int) -> c_i
     if is_lit {
         // Search the room.
         debug!("Searching room.");
-        trace!("Calling schlist_({}, {}, {}, {}, {}, {})", object_name, aidx, player.current_room, 0, 0, spcobj);
-        object_id = unsafe { ffi::schlst_(object_name, aidx, player.current_room, 0, 0, spcobj) };
-        trace!("schlist_ returned {}.", object_id);
+        let object_id = schlst_(noun, adjective, player.current_room, 0, 0, special_object);
 
         if object_id < 0 {
-            trace!("getobj_ returning {}", object_id);
+            debug!("Found multiple objects, returning object {}.", object_id.abs());
             return object_id;
         } else if object_id > 0 {
             // Get the object.
@@ -91,13 +92,15 @@ pub extern "C" fn getobj_(object_name: c_int, aidx: c_int, spcobj: c_int) -> c_i
 
             // It's here. Is it reachable?
             if vehicle == 0 || vehicle == object_id || current_object.get_find_bit() {
-                // We can reach it?
-            } else if current_object.can_reach == vehicle {
-                // We can reach it?
+                // We can reach it.
+            } else if current_object.container == vehicle {
+                // We can reach it.
             } else {
                 // It's here and we can't reach it?
                 chomp = true;
             }
+
+            ret = Some(object_id as u32);
         }
     }
 
@@ -105,95 +108,206 @@ pub extern "C" fn getobj_(object_name: c_int, aidx: c_int, spcobj: c_int) -> c_i
     // Search the vehicle.
     if vehicle != 0 {
         debug!("Searching vehicle");
-        trace!("Calling schlist_({}, {}, {}, {}, {}, {})", object_name, aidx, 0, vehicle, 0, spcobj);
-        let new_object_id = unsafe { ffi::schlst_(object_name, aidx, 0, vehicle, 0, spcobj) };
-        trace!("schlist_ returned {}.", object_id);
+        let object_id = schlst_(noun, adjective, 0, vehicle, 0, special_object);
 
-        if new_object_id < 0 {
+        if object_id < 0 {
             if chomp {
-                trace!("getobj_ returning {}", -10000);
-                return -10000;
+                trace!("getobj_ returning {}", CHOMP_RETURN);
+                return CHOMP_RETURN;
             } else {
-                trace!("getobj_ returning {}", new_object_id);
-                return new_object_id;
+                debug!("Found multiple objects, returning object {}.", object_id.abs());
+                return object_id;
             }
-        } else if new_object_id > 0 {
+        } else if object_id > 0 {
             chomp = false;
             // Did we find a different object?
-            if new_object_id != object_id {
-                object_id = new_object_id * -1;
-            } else {
-                object_id = new_object_id;
+            if let Some(other_id) = ret {
+                if object_id != other_id as i32 {
+                    debug!("Found multiple objects, returning object {}.", object_id);
+                    return object_id * -1;
+                }
             }
+
+            ret = Some(object_id as u32);
         }
     }
 
     // Not in vehicle.
     // Search the adventurer.
     debug!("Seraching adventurer's inventory.");
-    trace!("Calling schlist_({}, {}, {}, {}, {}, {})", object_name, aidx, 0, 0, player.winner, spcobj);
-    let new_object_id = unsafe { ffi::schlst_(object_name, aidx, 0, 0, player.winner, spcobj) };
-    trace!("schlist_ returned {}.", new_object_id);
+    let object_id = schlst_(noun, adjective, 0, 0, player.winner, special_object);
 
-    if new_object_id < 0 {
+    if object_id < 0 {
         if chomp {
             trace!("getobj_ returning {}", -10000);
             return -10000;
         } else {
-            trace!("getobj_ returning {}", new_object_id);
-            return new_object_id;
+            debug!("Found multiple objects, returning object {}.", object_id.abs());
+            return object_id;
         }
-    } else if new_object_id > 0 {
+    } else if object_id > 0 {
         
         // Did we find a different object?
-        if object_id != 0 && new_object_id != object_id.abs() {
-            object_id = new_object_id * -1;
-        } else {
-            object_id = new_object_id;
+        if let Some(other_id) = ret {
+            if object_id != (other_id as c_int) {
+                debug!("Found multiple objects, returning object {}.", object_id.abs());
+                return object_id * -1;
+            }
         }
+        
+        ret = Some(object_id as u32);
     }
 
-    if object_id != 0 {
-        if object_id > 0 {
-            debug!("Found object {}", object_id);
-        } else {
-            debug!("Found multiple objects, returning object {}.", object_id.abs());
-        }
-        trace!("getobj_ returning {}", object_id);
-        return object_id;
+    if let Some(object_id) = ret {
+        debug!("Found object {}", object_id);
+        return object_id as c_int;
     }
 
     // Search globals.
     debug!("Searching globals.");
-    let global_start = star_struct.strbit + 1;
-    for i in global_start .. objects.len() as c_int {
-        trace!("Calling thisit_({}, {}, {}, {})", object_name, aidx, i, spcobj);
-        let global_match: bool = unsafe { ffi::thisit_(object_name, aidx, i, spcobj).into() };
-        trace!("thisit_ returned {}", global_match);
+    for global_object in objects.global_ids() {
+        let object_id = global_object.get_id();
 
-        trace!("Calling ghere_({}, {})", i, player.current_room);
-        let can_be_here: bool = unsafe { ffi::ghere_(i, player.current_room).into() };
+        let global_match: bool = unsafe {
+            ffi::thisit_(noun, adjective, object_id as c_int, special_object).into()
+        };
+
+        trace!("Calling ghere_({}, {})", object_id, player.current_room);
+        let can_be_here: bool = unsafe {
+            ffi::ghere_(object_id as c_int, player.current_room).into()
+        };
         trace!("ghere_ returned {}", can_be_here);
 
         if global_match && can_be_here {
-            if object_id == 0 {
-                object_id = i;
-            } else {
-                object_id = i * -1;
+            if ret.is_some() {
+                debug!("Found multiple objects, returning object {}.", object_id);
+                return (object_id as c_int) * -1;
             }
+
+            ret = Some(object_id as u32);
         }
     }
 
-    if object_id > 0 {
+    if let Some(object_id) = ret {
         debug!("Found object {}", object_id);
-    } else if object_id < 0 {
-        debug!("Found multiple objects, returning object {}.", object_id.abs());
+        return object_id as c_int;
     } else {
         debug!("No object found.");
+        return 0;
     }
-    trace!("getobj_ returning {}", object_id);
-    return object_id;
 }
+
+// Search for an object. Searches the given room, vehicle, and adventurer inventory,
+// and return the corresponding object ID, or 0 if nothing matching is found.
+//
+// This will also check if the special_object matches, and return that if it can't
+// find anything else.
+//
+// If there are multiple possible matches, this returns a negative object ID of
+// one of the matches.
+//
+// This is never actually used to search multiple places at the same time, so I've
+// made using multiple places an error.
+#[no_mangle]
+pub extern "C" fn schlst_(noun: c_int, adjective: c_int, room: c_int,
+                          vehicle: c_int, adventurer: c_int, special_object: c_int) -> c_int
+{
+    trace!("schlst_({}, {}, {}, {}, {}, {})", noun, adjective, room, vehicle,
+            adventurer, special_object);
+
+    match (room, vehicle, adventurer) {
+        (0, 0, 0) => {
+            error!("schlist_ must search something.");
+            core::exit_program()
+        },
+        (id, 0, 0) => search_room(noun, adjective,
+                                  special_object as usize, id).unwrap_or(0),
+        (0, id, 0) => search_container(noun, adjective,
+                                       special_object as usize, id as usize).unwrap_or(0),
+        (0, 0, id) => search_adventurer(noun, adjective,
+                                        special_object as usize, id).unwrap_or(0),
+        _ => {
+            error!("Cannot schlist_ multiple places!");
+            core::exit_program()
+        }
+    }
+}
+
+fn search_room(noun: c_int, adjective: c_int,
+               special_object: usize, room: c_int) -> Option<c_int> {
+    trace!("Redirecting schlst_ to room search...");
+    let room_filter = |object: &ObjectEntry| object.is_in_room(room as usize);
+    search_objects(noun, adjective, special_object, room_filter)
+}
+
+fn search_container(noun: c_int, adjective: c_int, 
+                    special_object: usize, container: usize) -> Option<c_int> {
+    trace!("Redirecting schlst_ to container search...");
+    let container_filter = |object: &ObjectEntry| object.container == (container as c_int);
+    search_objects(noun, adjective, special_object, container_filter)
+}
+
+fn search_adventurer(noun: c_int, adjective: c_int,
+                     special_object: usize, adventurer: c_int) -> Option<c_int> {
+    trace!("Redirecting schlst_ to adventurer search...");
+    let adventurer_filter = |object: &ObjectEntry| object.adventurer == adventurer;
+    search_objects(noun, adjective, special_object, adventurer_filter)
+}
+
+// Looks through all objects for ones that match the given filter.
+fn search_objects<F>(noun: c_int, adjective: c_int, 
+                     special_object: usize, f: F) -> Option<c_int>
+where F: Fn(&ObjectEntry) -> bool
+{
+    trace!("search_objects({}, {}, {}, F)", noun, adjective, special_object);
+
+    let objects = unsafe { &ffi::objects };
+
+    let filtered_objects: Vec<_> = objects.iter()
+        .filter(|object| object.is_visible() && f(&object))
+        .collect();
+   
+    debug!("filtered objects: {:#?}", &filtered_objects);
+
+    // Look for direct matches.
+    let mut matches: Vec<_> = filtered_objects.iter()
+        .filter(|object| {
+            object.get_id() == special_object
+                || object.matches(noun as usize, adjective as usize)
+        })
+        .map(|object| {
+            let ret = object.get_id() as c_int;
+            ret
+        })
+        .collect();
+
+    debug!("direct matches: {:?}", &matches);
+
+    // Look for indirect matches.
+    let mut indirect_matches: Vec<_> = filtered_objects.into_iter()
+        .filter(|object| object.is_open() || object.is_transparent() ||
+               object.is_searchable())
+        .flat_map(|object| search_container(noun, adjective, special_object, object.get_id()))
+        .collect();
+
+    debug!("indirect matches: {:?}", &indirect_matches);
+
+    // Collect all the matches together.
+    matches.append(&mut indirect_matches);
+
+    if matches.len() == 0 {
+        trace!("search_objects: No objects found.");
+        None
+    } else if matches.len() == 1 {
+        trace!("search_objects: Returning {}", matches[0]);
+        Some(matches[0])
+    } else {
+        trace!("search_objects: Multiple matches found: {:?}", matches);
+        Some(matches[0].abs() * -1)
+    }
+}
+
+
 
 // The lexer.
 // c_output will always have a fixed length of 40.

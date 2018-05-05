@@ -148,10 +148,10 @@ EXTERN struct {
 	// room
 	integer oroom[220];
 
-	// adv
+	// adventurer
 	integer oadv[220];
 
-	// can_reach
+	// container
    	integer ocan[220]; 
 
 	// read
@@ -169,38 +169,39 @@ EXTERN struct {
 
 /* Object flags (oflags) */
 
-#define VISIBT (32768)
-#define READBT (16384)
-#define TAKEBT (8192)
-#define DOORBT (4096)
-#define TRANBT (2048)
-#define FOODBT (1024)
-#define NDSCBT (512)
-#define DRNKBT (256)
-#define CONTBT (128)
-#define LITEBT (64)
-#define VICTBT (32)
-#define BURNBT (16)
-#define FLAMBT (8)
-#define TOOLBT (4)
-#define TURNBT (2)
-#define ONBT (1)
+#define VISIBT (32768)	// 1 << 15
+#define READBT (16384)	// 1 << 14
+#define TAKEBT (8192)	// 1 << 13
+#define DOORBT (4096)	// 1 << 12
+#define TRANBT (2048)	// 1 << 11
+#define FOODBT (1024)	// 1 << 10
+#define NDSCBT (512)	// 1 << 9
+#define DRNKBT (256)	// 1 << 8
+#define CONTBT (128)	// 1 << 7
+#define LITEBT (64)		// 1 << 6
+#define VICTBT (32)		// 1 << 5
+#define BURNBT (16)		// 1 << 4
+#define FLAMBT (8)		// 1 << 3
+#define TOOLBT (4)		// 1 << 2
+#define TURNBT (2)		// 1 << 1
+#define ONBT (1)		// 1 << 0
+
 #define FINDBT (32768)	// 1 << 15
-#define SLEPBT (16384)
-#define SCRDBT (8192)
-#define TIEBT (4096)
-#define CLMBBT (2048)
-#define ACTRBT (1024)
-#define WEAPBT (512)
-#define FITEBT (256)
-#define VILLBT (128)
-#define STAGBT (64)
-#define TRYBT (32)
-#define NOCHBT (16)
-#define OPENBT (8)
-#define TCHBT (4)
-#define VEHBT (2)
-#define SCHBT (1)
+#define SLEPBT (16384)	// 1 << 14
+#define SCRDBT (8192)	// 1 << 13
+#define TIEBT (4096)	// 1 << 12
+#define CLMBBT (2048)	// 1 << 11
+#define ACTRBT (1024)	// 1 << 10
+#define WEAPBT (512)	// 1 << 9
+#define FITEBT (256)	// 1 << 8
+#define VILLBT (128)	// 1 << 7
+#define STAGBT (64)		// 1 << 6
+#define TRYBT (32)		// 1 << 5
+#define NOCHBT (16)		// 1 << 4
+#define OPENBT (8)		// 1 << 3
+#define TCHBT (4)		// 1 << 2
+#define VEHBT (2)		// 1 << 1
+#define SCHBT (1)		// 1 << 0
 
 EXTERN const struct {
     integer garli, food, gunk, coal, machi, diamo, tcase, bottl, water, rope, 

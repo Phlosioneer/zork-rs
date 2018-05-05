@@ -133,7 +133,7 @@ struct Verb {
     indirect_object: Option<VerbObject>
 }
 
-struct VerbObject {
+struct VerbObjectDesc {
     prep_id: usize,
 
     search_player: bool,
@@ -278,7 +278,7 @@ lazy_static! {
             orphanery: false,
 
             direct_object: Some(vec![
-                VerbObject {
+                VerbObjectDesc {
                     prep_id: 0,
                     
                     search_player: true,
@@ -288,7 +288,7 @@ lazy_static! {
 
                     qualifying_bits: false
                 },
-                VerbObject {
+                VerbObjectDesc {
                     prep_id: 128,
 
                     search_player: false,
@@ -298,7 +298,7 @@ lazy_static! {
 
                     qualifying_bits: false
                 },
-                VerbObject {
+                VerbObjectDesc {
                     prep_id: 0,
                     
                     search_player: false,
@@ -438,7 +438,7 @@ lazy_static! {
 // The objects array was stored the same way as the adjectives array.
 //
 
-struct Object {
+struct ObjectDesc {
     id: usize,
     
     names: Vec<&'static str>,
@@ -446,1289 +446,1303 @@ struct Object {
 }
 
 lazy_static! {
-    static OBJECTS: Vec<Object> = vec![
-        Object {
+    static OBJECT_DESCRIPTIONS: Vec<ObjectDesc> = vec![
+        ObjectDesc {
             id: 1,
 
             names: vec!["bag", "sack"],
             adjectives: vec!["brown", "elongated"]
         },
-        Object {
+        ObjectDesc {
             id: 2,
 
             names: vec!["garlic", "clove"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 3,
 
             names: vec!["food", "sandwitch", "lunch", "dinner"],
             adjectives: vec!["hot", "pepper"]
         },
-        Object {
+        ObjectDesc {
             id: 4,
 
             names: vec!["gunk", "piece", "slag"],
             adjectives: vec!["vitreous"]
         },
-        Object {
+        ObjectDesc {
             id: 5,
 
             names: vec!["coal", "pile", "heap"],
             adjectives: vec!["small"]
         },
-        Object {
+        ObjectDesc {
             id: 6,
 
             names: vec!["figurine"],
             adjectives: vec!["jade"]
         },
-        Object {
+        ObjectDesc {
             id: 7,
 
             names: vec!["machine", "pdpnm", "pdpnn", "dryer", "lid"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 8,
 
             names: vec!["diamond"],
             adjectives: vec!["huge", "enormous"]
         },
-        Object {
+        ObjectDesc {
             id: 9,
 
             names: vec!["case"],
             adjectives: vec!["trophy"]
         },
-        Object {
+        ObjectDesc {
             id: 10,
 
             names: vec!["bottle", "container"],
             adjectives: vec!["clear", "glass"]
         },
-        Object {
+        ObjectDesc {
             id: 11,
 
             names: vec!["water", "quantity", "liquid", "hoo"],
             adjectives:
         },
-        Object {
+        ObjectDesc {
             id: 12,
 
             names: vec!["rope", "hemp", "coil"],
             adjectives: vec!["large"]
         },
-        Object {
+        ObjectDesc {
             id: 13,
 
             names: vec!["knife", "blade"],
             adjectives: vec!["nasty"]
         },
-        Object {
+        ObjectDesc {
             id: 14,
 
             names: vec!["sword", "orchrist", "glamring", "blade"],
             adjectives: vec!["elvish"]
         },
-        Object {
+        ObjectDesc {
             id: 15,
 
             names: vec!["lamp", "lantern"],
             adjectives: vec!["brass"]
         },
-        Object {
+        ObjectDesc {
             id: 16,
 
             names: vec!["lamp", "lantern"],
             adjectives: vec!["brass", "broken"]
         },
-        Object {
+        ObjectDesc {
             id: 17,
 
             names: vec!["rug", "carpet"],
             adjectives: vec!["oriental"]
         },
-        Object {
+        ObjectDesc {
             id: 18,
 
             names: vec!["leaves", "leaf"],
             adjectives:
         },
-        Object {
+        ObjectDesc {
             id: 19,
 
             names: vec!["troll"],
             adjectives:
         },
-        Object {
+        ObjectDesc {
             id: 20,
 
             names: vec!["axe"],
             adjectives: vec!["bloody"]
         },
-        Object {
+        ObjectDesc {
             id: 21,
             
             names: vec!["knife"],
             adjectives: vec!["rusty"]
         },
-        Object {
+        ObjectDesc {
             id: 22,
 
             names: vec!["lamp", "lantern"],
             adjectives: vec!["broken", "burned", "dead"]
         },
-        Object {
+        ObjectDesc {
             id: 23,
 
             names: vec!["keys", "key", "set"],
             adjectives:
         },
-        Object {
+        ObjectDesc {
             id: 24,
 
             names: vec!["bones", "skeleton", "body"],
             adjectives:
         },
-        Object {
+        ObjectDesc {
             id: 25,
 
             names: vec!["coins", "bag"],
             adjectives: vec!["old", "leather"]
         },
-        Object {
+        ObjectDesc {
             id: 26,
 
             names: vec!["bar"],
             adjectives: vec!["large", "platinum"]
         },
-        Object {
+        ObjectDesc {
             id: 27,
 
             names: vec!["necklace", "pearls"],
             adjectives: vec!["pearl"]
         },
-        Object {
+        ObjectDesc {
             id: 28,
 
             names: vec!["mirror"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 29,
 
             names: vec!["mirror"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 30,
 
             names: vec!["ice", "mass", "glacier"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 31,
 
             names: vec!["ruby"],
             adjectives: vec!["moby"]
         },
-        Object {
+        ObjectDesc {
             id: 32,
 
             names: vec!["trident", "fork"],
             adjectives: vec!["crystal"]
         },
-        Object {
+        ObjectDesc {
             id: 33,
 
             names: vec!["coffin", "casket"],
             adjectives: vec!["gold"]
         },
-        Object {
+        ObjectDesc {
             id: 34,
 
             names: vec!["torch"],
             adjectives: vec!["ivory"]
         },
-        Object {
+        ObjectDesc {
             id: 35,
 
             names: vec!["cage", "dumbwaiter", "basket"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 36,
 
             names: vec!["cage", "dumbwaiter", "basket"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 37,
 
             names: vec!["bracelet", "jewel"],
             adjectives: vec!["sapphire"]
         },
-        Object {
+        ObjectDesc {
             id: 38,
 
             names: vec!["timber", "pile"],
             adjectives: vec!["wooden", "wood"]
         },
-        Object {
+        ObjectDesc {
             id: 39,
 
             names: vec!["box"],
             adjectives: vec!["steel", "dented"]
         },
-        Object {
+        ObjectDesc {
             id: 40,
 
             names: vec!["stradivarius", "violin"],
             adjectives: vec!["fancy"]
         },
-        Object {
+        ObjectDesc {
             id: 41,
 
             names: vec!["engraving", "inscription"],
             adjectives: vec!["old", "ancient"]
         },
-        Object {
+        ObjectDesc {
             id: 42,
 
             names: vec!["ghost", "spirit", "fiend"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 43,
             
             names: vec!["grail"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 44,
 
             names: vec!["prayer", "inscription"],
             adjectives: vec!["old", "ancient"]
         },
-        Object {
+        ObjectDesc {
             id: 45,
 
             names: vec!["trunk", "chest"],
             adjectives: vec!["old"]
         },
-        Object {
+        ObjectDesc {
             id: 46,
 
             names: vec!["bell"],
             adjectives: vec!["brass", "small"]
         },
-        Object {
+        ObjectDesc {
             id: 47,
 
             names: vec!["book", "bible", "goodbook", "prayerbook"],
             adjectives: vec!["large", "black"]
         },
-        Object {
+        ObjectDesc {
             id: 48,
 
             names: vec!["candle", "pair"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 49,
 
             names: vec!["guidebook", "guide", "book"],
             adjectives: vec!["tour"]
         },
-        Object {
+        ObjectDesc {
             id: 50,
 
             names: vec!["paper", "newspaper", "issue", "report", "magazine", "news"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 51,
 
             names: vec!["matchbox", "match", "matches"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 52,
 
             names: vec!["advertizement", "pamphlet", "leaflet", "booklet"],
             adjectives: vec!["small"]
         },
-        Object {
+        ObjectDesc {
             id: 53,
 
             names: vec!["mailbox", "box"],
             adjectives: vec!["small"]
         },
-        Object {
+        ObjectDesc {
             id: 54,
 
             names: vec!["tube", "toothpaste"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 55,
 
             names: vec!["putty", "material", "glue", "gunk"],
             adjectives: vec!["viscous"]
         },
-        Object {
+        ObjectDesc {
             id: 56,
 
             names: vec!["wrench"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 57,
 
             names: vec!["screwdriver"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 58,
 
             names: vec!["cyclopse", "monster"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 59,
 
             names: vec!["chalice", "cup", "goblet"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 60,
 
             names: vec!["painting", "art", "cantur", "picture", "work", "masterpiece"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 61,
 
             names: vec!["thief", "robber", "criminal", "bandit", "crook", "gent",
                 "gentleman", "man", "thug", "bagman"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 62,
 
             names: vec!["stille"],
             adjectives: vec!["vicious"]
         },
-        Object {
+        ObjectDesc {
             id: 63,
 
             names: vec!["window"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 64,
 
             names: vec!["bolt", "nut"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 65,
 
             names: vec!["grate", "grating"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 66,
 
             names: vec!["door", "trapdoor", "trap-door"],
             adjectives: vec!["trap"]
         },
-        Object {
+        ObjectDesc {
             id: 67,
 
             names: vec!["letter", "door"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 68,
 
             names: vec!["door"],
             adjectives: vec!["front"]
         },
-        Object {
+        ObjectDesc {
             id: 69,
 
             names: vec!["door"],
             adjectives: vec!["stone"]
         },
-        Object {
+        ObjectDesc {
             id: 70,
 
             names: vec!["switch"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 71,
 
             names: vec!["head"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 72,
             
             names: vec!["corpse"],
             adjectives: vec!["mangled"]
         },
-        Object {
+        ObjectDesc {
             id: 73,
 
             names: vec!["bodies", "body", "corpse", "corpses"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 74,
 
             names: vec!["dam", "gates", "gate", "fcd"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 75,
 
             names: vec!["rail", "railing"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 76,
 
             names: vec!["button", "switch", "gates", "gate"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 77,
 
             names: vec!["bubble"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 78,
 
             names: vec!["leak", "drip", "hole", "pile"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 79,
 
             names: vec!["switch", "button"],
             adjectives: vec!["red"]
         },
-        Object {
+        ObjectDesc {
             id: 80,
 
             names: vec!["switch", "button"],
             adjectives: vec!["yellow"]
         },
-        Object {
+        ObjectDesc {
             id: 81,
 
             names: vec!["switch", "button"],
             adjectives: vec!["brown"]
         },
-        Object {
+        ObjectDesc {
             id: 82,
 
             names: vec!["switch", "button"],
             adjectives: vec!["blue"] 
         },
-        Object {
+        ObjectDesc {
             id: 83,
 
             names: vec!["bat"],
             adjectives: vec!["vampire", "vampiric"]
         },
-        Object {
+        ObjectDesc {
             id: 84,
 
             names: vec!["rainbow"],
             adjectives:
         },
-        Object {
+        ObjectDesc {
             id: 85,
 
             names: vec!["pot"],
             adjectives: vec!["gold"]
         },
-        Object {
+        ObjectDesc {
             id: 86,
 
             names: vec!["statue", "sculpture", "rock"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 87,
             
             names: vec!["boat", "plastic", "pile"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 88,
 
             names: vec!["pile", "boat", "plastic"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 89,
 
             names: vec!["pump", "airpump", "air-pump"],
             adjectives: vec!["small"]
         },
-        Object {
+        ObjectDesc {
             id: 90,
             
             names: vec!["boat"],
             adjectives: vec!["magic", "seaworthy"]
         },
-        Object {
+        ObjectDesc {
             id: 91,
 
             names: vec!["label", "fineprint"],
             adjectives: vec!["tan"]
         },
-        Object {
+        ObjectDesc {
             id: 92,
 
             names: vec!["stick"],
             adjectives: vec!["broken", "sharp"]
         },
-        Object {
+        ObjectDesc {
             id: 93,
 
             names: vec!["barrel"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 94,
 
             names: vec!["buoy"],
             adjectives: vec!["red"]
         },
-        Object {
+        ObjectDesc {
             id: 95,
 
             names: vec!["emerald"],
             adjectives: vec!["large"]
         },
-        Object {
+        ObjectDesc {
             id: 96,
 
             names: vec!["shovel"],
             adjectives: vec!["large"]
         },
-        Object {
+        ObjectDesc {
             id: 97,
 
             names: vec!["guano", "crap", "shit", "hunk"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 98,
 
             names: vec!["balloon", "basket"],
             adjectives: vec!["wicker"]
         },
-        Object {
+        ObjectDesc {
             id: 99,
 
             names: vec!["reception"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 100,
 
             names: vec!["bag"],
             adjectives: vec!["cloth"]
         },
-        Object {
+        ObjectDesc {
             id: 101,
 
             names: vec!["wire", "rope"],
             adjectives: vec!["braided"]
         },
-        Object {
+        ObjectDesc {
             id: 102,
 
             names: vec!["hook"],
             adjectives: vec!["small"]
         },
-        Object {
+        ObjectDesc {
             id: 103,
 
             names: vec!["hook"],
             adjectives: vec!["small"]
         },
-        Object {
+        ObjectDesc {
             id: 104,
 
             names: vec!["zorkmi", "coin"],
             adjectives: vec!["gold"]
         },
-        Object {
+        ObjectDesc {
             id: 105,
 
             names: vec!["safe", "box"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 106,
 
             names: vec!["card", "note"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 107,
 
             names: vec!["slot", "hole"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 108,
 
             names: vec!["crown"],
             adjectives: vec!["gaudy"]
         },
-        Object {
+        ObjectDesc {
             id: 109,
             
             names: vec!["brick"],
             adjectives: vec!["square", "clay"]
         },
-        Object {
+        ObjectDesc {
             id: 110,
 
             names: vec!["fuse", "coil", "wire"],
             adjectives: vec!["shiny", "thin"]
         },
-        Object {
+        ObjectDesc {
             id: 111,
 
             names: vec!["gnome"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 112,
 
             names: vec!["label", "pile"],
             adjectives: vec!["blue"]
         },
-        Object {
+        ObjectDesc {
             id: 113,
 
             names: vec!["balloon", "basket"],
             adjectives: vec!["broken"]
         },
-        Object {
+        ObjectDesc {
             id: 114,
 
             names: vec!["book"],
             adjectives: vec!["blue"]
         },
-        Object {
+        ObjectDesc {
             id: 115,
 
             names: vec!["book"],
             adjectives: vec!["green"]
         },
-        Object {
+        ObjectDesc {
             id: 116,
 
             names: vec!["book"],
             adjectives: vec!["purple"]
         },
-        Object {
+        ObjectDesc {
             id: 117,
 
             names: vec!["book"],
             adjectives: vec!["white"]
         },
-        Object {
+        ObjectDesc {
             id: 118,
 
             names: vec!["stamp"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 119,
 
             names: vec!["tomb", "crypt", "grave"],
             adjectives: vec!["marble"]
         },
-        Object {
+        ObjectDesc {
             id: 120,
 
             names: vec!["heads", "poles", "implements", "losers", "head"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 121,
 
             names: vec!["cokes", "bottle", "bottles"],
             adjectives: vec!["coke", "empty"] 
         },
-        Object {
+        ObjectDesc {
             id: 122,
 
             names: vec!["listing", "stack", "printout", "paper"],
             adjectives: vec!["enormous"]
         },
-        Object {
+        ObjectDesc {
             id: 123,
 
             names: vec!["case"],
             adjectives: vec!["large"]
         },
-        Object {
+        ObjectDesc {
             id: 124,
 
             names: vec!["cage"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 125,
 
             names: vec!["cage"],
             adjectives: vec!["steel"]
         },
-        Object {
+        ObjectDesc {
             id: 126,
 
             names: vec!["sphere", "ball"],
             adjectives: vec!["glass"]
         },
-        Object {
+        ObjectDesc {
             id: 127,
 
             names: vec!["button"],
             adjectives: vec!["square"]
         },
-        Object {
+        ObjectDesc {
             id: 128,
 
             names: vec!["button"],
             adjectives: vec!["round"]
         },
-        Object {
+        ObjectDesc {
             id: 129,
 
             names: vec!["button"],
             adjectives: vec!["triangle", "triangular"]
         },
-        Object {
+        ObjectDesc {
             id: 130,
 
             names: vec!["etching", "walls", "wall"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 131,
 
             names: vec!["etching", "walls", "wall"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 132,
 
             names: vec!["flask"],
             adjectives: vec!["glass"]
         },
-        Object {
+        ObjectDesc {
             id: 133,
 
             names: vec!["pool", "sewage"],
             adjectives: vec!["large"]
         },
-        Object {
+        ObjectDesc {
             id: 134,
 
             names: vec!["tin", "saffron", "spices"],
             adjectives: vec!["rare"]
         },
-        Object {
+        ObjectDesc {
             id: 135,
 
             names: vec!["table"],
             adjectives: vec!["large", "oblong"]
         },
-        Object {
+        ObjectDesc {
             id: 136,
 
             names: vec!["post", "posts"],
             adjectives: vec!["wooden", "wood"]
         },
-        Object {
+        ObjectDesc {
             id: 137,
 
             names: vec!["bucket"],
             adjectives: vec!["wooden", "wood"]
         },
-        Object {
+        ObjectDesc {
             id: 138,
             
             names: vec!["cake"],
             adjectives: vec!["eat-me", "eatme"]
         },
-        Object {
+        ObjectDesc {
             id: 139,
             
             names: vec!["icing", "cake"],
             adjectives: vec!["orange"]
         },
-        Object {
+        ObjectDesc {
             id: 140,
 
             names: vec!["cake", "icing"],
             adjectives: vec!["red"]
         },
-        Object {
+        ObjectDesc {
             id: 141,
 
             names: vec!["cake", "icing"],
             adjectives: vec!["blue", "ecch"]
         },
-        Object {
+        ObjectDesc {
             id: 142,
 
             names: vec!["robot", "robby", "cppo", "rudo"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 143,
 
             names: vec!["paper", "piece"],
             adjectives: vec!["green"]
         },
-        Object {
+        ObjectDesc {
             id: 144,
 
             names: vec!["tree"],
             adjectives: vec![]  // TODO: Shouldn't one or both of these be "large"?
         },
-        Object {
+        ObjectDesc {
             id: 145,
 
             names: vec!["tree"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 146,
 
             names: vec!["cliff", "ledge"],
             adjectives: vec!["large"] 
         },
-        Object {
+        ObjectDesc {
             id: 147,
 
             names: vec!["cliff", "ledge"],
             adjectives: vec!["large", "white", "rocky", "sheer"]
         },
-        Object {
+        ObjectDesc {
             id: 148,
 
             names: vec!["stack", "bills", "zorkmi"],
             adjectives: vec!["omm", "neat"]
         },
-        Object {
+        ObjectDesc {
             id: 149,
 
             names: vec!["portrait", "painting", "art"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 150,
 
             names: vec!["vault", "cube", "lettering"],
             adjectives: vec!["large", "stone"]
         },
-        Object {
+        ObjectDesc {
             id: 151,
 
             names: vec!["curtain", "light"],
             adjectives: vec!["shimmering"]
         },
-        Object {
+        ObjectDesc {
             id: 152,
             
             names: vec!["gnome"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 153,
 
             names: vec!["nest"],
             adjectives: vec!["small", "birds"]
         },
-        Object {
+        ObjectDesc {
             id: 154,
             
             names: vec!["egg"],
             adjectives: vec!["birds", "encrusted"]
         },
-        Object {
+        ObjectDesc {
             id: 155,
 
             names: vec!["egg"],
             adjectives: vec!["broken", "birds", "encrusted"]
         },
-        Object {
+        ObjectDesc {
             id: 156,
 
             names: vec!["bauble"],
             adjectives: vec!["brass", "beautiful"]
         },
-        Object {
+        ObjectDesc {
             id: 157,
 
             names: vec!["canary"],
             adjectives: vec!["gold", "clockwork", "mechanical"]
         },
-        Object {
+        ObjectDesc {
             id: 158,
 
             names: vec!["canary"],
             adjectives: vec!["broken", "gold", "clockwork", "mechanical"]
         },
-        Object {
+        ObjectDesc {
             id: 159,
 
             names: vec!["panel", "wall"],
             adjectives: vec!["yellow"]
         },
-        Object {
+        ObjectDesc {
             id: 160,
 
             names: vec!["panel", "wall"],
             adjectives: vec!["white"]
         },
-        Object {
+        ObjectDesc {
             id: 161,
 
             names: vec!["panel", "wall"],
             adjectives: vec!["red"]
         },
-        Object {
+        ObjectDesc {
             id: 162,
 
             names: vec!["panel", "wall"],
             adjectives: vec!["black"]
         },
-        Object {
+        ObjectDesc {
             id: 163,
 
             names: vec!["panel", "wall"],
             adjectives: vec!["mahogany"]
         },
-        Object {
+        ObjectDesc {
             id: 164,
 
             names: vec!["panel", "wall"],
             adjectives: vec!["pine"]
         },
-        Object {
+        ObjectDesc {
             id: 165,
 
             names: vec!["bar"],
             adjectives: vec!["wooden", "wood"] 
         },
-        Object {
+        ObjectDesc {
             id: 166,
 
             names: vec!["pole", "post"],
             adjectives: vec!["long", "center"]
         },
-        Object {
+        ObjectDesc {
             id: 167,
 
             names: vec!["pole", "post"],
             adjectives: vec!["short"]
         },
-        Object {
+        ObjectDesc {
             id: 168,
 
             names: vec!["tbar", "t-bar", "bar"],
             adjectives: vec!["t"]
         },
-        Object {
+        ObjectDesc {
             id: 169,
 
             names: vec!["arrow", "point"],
             adjectives: vec!["compass"]
         },
-        Object {
+        ObjectDesc {
             id: 170,
 
             names: vec!["switch", "button"],
             adjectives: vec!["red"]
         },
-        Object {
+        ObjectDesc {
             id: 171,
 
             names: vec!["beam"],
             adjectives: vec!["red"]
         },
-        Object {
+        ObjectDesc {
             id: 172,
 
             names: vec!["door"],
             adjectives: vec!["bronze"]
         },
-        Object {
+        ObjectDesc {
             id: 173,
 
             names: vec!["door"],
             adjectives: vec!["wooden", "wood"]
         },
-        Object {
+        ObjectDesc {
             id: 174,
 
             names: vec!["door"],
             adjectives: vec!["wooden", "wood", "cell", "locked"]
         },
-        Object {
+        ObjectDesc {
             id: 175,
 
             names: vec!["door"],
             adjectives: vec!["wooden", "wood", "cell"]
         },
-        Object {
+        ObjectDesc {
             id: 176,
 
             names: vec!["button"],
             adjectives: vec!["large"]
         },
-        Object {
+        ObjectDesc {
             id: 177,
 
             names: vec!["dial", "sundial"],
             adjectives: vec!["sun"]
         },
-        Object {
+        ObjectDesc {
             id: 178,
 
             names: vec!["1", "one"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 179,
 
             names: vec!["2", "two"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 180,
             
             names: vec!["3", "three"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 181,
 
             names: vec!["4", "four"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 182,
 
             names: vec!["5", "five"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 183,
 
             names: vec!["6", "six"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 184,
 
             names: vec!["7", "seven"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 185,
 
             names: vec!["8", "eight"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 186,
 
             names: vec!["warning", "paper", "piece", "note"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 187,
 
             names: vec!["slit", "slot"],
             adjectives: vec!["small"]
         },
-        Object {
+        ObjectDesc {
             id: 188,
 
             names: vec!["card"],
             adjectives: vec!["gold"]
         },
-        Object {
+        ObjectDesc {
             id: 189,
 
             names: vec!["door"],
             adjectives: vec!["steel"]
         },
+        
+        
         // No entries for objects 190 and 191.
-        Object {
+        ObjectDesc {
+            id: 190,
+            names: vec![],
+            adjectives: vec![]
+        },
+        ObjectDesc {
+            id: 191,
+            names: vec![],
+            adjectives: vec![]
+        },
+
+
+        ObjectDesc {
             id: 192,
 
             names: vec!["it", "that", "this"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 193,
 
             names: vec!["me", "myself", "cretin"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 194,
 
             names: vec!["all", "everything"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 195,
 
             names: vec!["treasure", "valuable"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 196,
 
             names: vec!["sailor"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 197,
 
             names: vec!["teeth"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 198,
 
             names: vec!["walls", "wall"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 199,
 
             names: vec!["grue"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 200,
 
             names: vec!["hand", "hands"],
             adjectives: vec!["bare"]
         },
-        Object {
+        ObjectDesc {
             id: 201,
             
             names: vec!["lungs", "air"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 202,
 
             names: vec!["aviator", "flyer"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 203,
 
             names: vec!["bird", "songbird"],
             adjectives: vec!["song"]
         },
-        Object {
+        ObjectDesc {
             id: 204,
 
             names: vec!["tree"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 205,
 
             names: vec!["walls", "wall"],
             adjectives: vec!["north", "northern"]
         },
-        Object {
+        ObjectDesc {
             id: 206,
 
             names: vec!["walls", "wall"],
             adjectives: vec!["south", "southern"]
         },
-        Object {
+        ObjectDesc {
             id: 207,
 
             names: vec!["walls", "wall"],
             adjectives: vec!["east", "eastern"]
         },
-        Object {
+        ObjectDesc {
             id: 208,
 
 
             names: vec!["walls", "wall"],
             adjectives: vec!["west", "western"]
         },
-        Object {
+        ObjectDesc {
             id: 209,
 
             names: vec!["water", "quantity", "liquid", "hoo", "h2o"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 210,
 
             names: vec!["guard", "guardian"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 211,
 
             names: vec!["rose"],
             adjectives: vec!["compass"]
         },
-        Object {
+        ObjectDesc {
             id: 212,
 
             names: vec!["structure", "mirror"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 213,
 
             names: vec!["panel"],
             adjectives: vec![]
         },
-        Object {
+        ObjectDesc {
             id: 214,
 
             names: vec!["channel"],
             adjectives: vec!["stone"]
         },
-        Object {
+        ObjectDesc {
             id: 215,
 
             names: vec!["keeper", "masterpiece"],
             adjectives: vec!["dungeon"]
         },
-        Object {
+        ObjectDesc {
             id: 216,
 
             names: vec!["ladder"],
