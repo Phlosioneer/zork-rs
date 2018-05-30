@@ -1,3 +1,5 @@
+#![feature(try_from)]
+
 #[macro_use]
 extern crate log;
 
@@ -13,5 +15,5 @@ pub mod ffi;
 pub mod replacement;
 pub mod core;
 pub mod recording;
-
+pub mod search;
 

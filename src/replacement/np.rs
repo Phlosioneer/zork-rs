@@ -1,10 +1,13 @@
 
 use std::slice;
+use std::convert::TryInto;
 use libc::c_int;
 use replacement::supp;
 use ffi;
-use ffi::objects::ObjectEntry;
 use core;
+use search;
+
+
 
 /// read a line of input into the buffer. the 'who' parameter is either 0
 /// or 1. if it is 1, a "roleplay" prompt is printed, indicating that it
@@ -66,14 +69,21 @@ pub extern "C" fn getobj_(noun: c_int, adjective: c_int, special_object: c_int) 
     
     let current_adventurer = adventurers.get(player.winner as usize);
 
-    let vehicle = current_adventurer.vehicle;
+    let vehicle = current_adventurer.get_vehicle();
+
+    let checked_noun = ffi::check_noun(noun);
+    let checked_adjective = ffi::check_adjective(adjective);
+    let checked_special_object = special_object.try_into().unwarp_or_else(|_| {
+        error!("Player.winner is negative! (original: {})", player.winner);
+        core::exit_program()
+    });
 
     debug!("player: {:?}", player);
     debug!("current_adventurer: {:?}", current_adventurer);
     debug!("vehicle: {:?}", vehicle);
 
     let mut chomp = false;
-    let mut ret: Option<u32> = None;
+    let mut ret: Option<usize> = None;
 
     // Check if the current room is lit.
     let is_lit: bool = unsafe { ffi::lit_(player.current_room).into() };
@@ -81,26 +91,33 @@ pub extern "C" fn getobj_(noun: c_int, adjective: c_int, special_object: c_int) 
     if is_lit {
         // Search the room.
         debug!("Searching room.");
-        let object_id = schlst_(noun, adjective, player.current_room, 0, 0, special_object);
+        let search_res = search::search_room(checked_noun, 
+                                             checked_adjective, 
+                                             player.get_current_room(), 
+                                             checked_special_object);
 
-        if object_id < 0 {
-            debug!("Found multiple objects, returning object {}.", object_id.abs());
-            return object_id;
-        } else if object_id > 0 {
-            // Get the object.
-            let current_object = objects.get(object_id as usize);
+        match search_res {
+            Err(SearchError::MultipleMatches(ids)) => {
+                debug!("Found multiple objects, returning object {}.", ids[0]);
+                return (ids[0] as c_int) * -1;
+            },
+            Ok(object_id) => {
+                // Get the object.
+                let current_object = objects.get(object_id);
 
-            // It's here. Is it reachable?
-            if vehicle == 0 || vehicle == object_id || current_object.get_find_bit() {
-                // We can reach it.
-            } else if current_object.container == vehicle {
-                // We can reach it.
-            } else {
-                // It's here and we can't reach it?
-                chomp = true;
-            }
+                // It's here. Is it reachable?
+                if vehicle == 0 || vehicle == object_id || current_object.get_find_bit() {
+                    // We can reach it.
+                } else if current_object.container == vehicle {
+                    // We can reach it.
+                } else {
+                    // It's here and we can't reach it?
+                    chomp = true;
+                }
 
-            ret = Some(object_id as u32);
+                ret = Some(object_id);
+            },
+            Err(SearchError::NoMatches) => ()
         }
     }
 
@@ -108,54 +125,67 @@ pub extern "C" fn getobj_(noun: c_int, adjective: c_int, special_object: c_int) 
     // Search the vehicle.
     if vehicle != 0 {
         debug!("Searching vehicle");
-        let object_id = schlst_(noun, adjective, 0, vehicle, 0, special_object);
+        let search_res = search::search_container(checked_noun, 
+                                                  checked_adjective, 
+                                                  vehicle, 
+                                                  checked_special_object);
 
-        if object_id < 0 {
-            if chomp {
-                trace!("getobj_ returning {}", CHOMP_RETURN);
-                return CHOMP_RETURN;
-            } else {
-                debug!("Found multiple objects, returning object {}.", object_id.abs());
-                return object_id;
-            }
-        } else if object_id > 0 {
-            chomp = false;
-            // Did we find a different object?
-            if let Some(other_id) = ret {
-                if object_id != other_id as i32 {
-                    debug!("Found multiple objects, returning object {}.", object_id);
-                    return object_id * -1;
+        match search_res {
+            Err(SearchError::MultipleMatches(ids)) {
+                if chomp {
+                    trace!("getobj_ returning {}", CHOMP_RETURN);
+                    return CHOMP_RETURN;
+                } else {
+                    debug!("Found multiple objects, returning object {}.", ids[0]);
+                    return (ids[0] as c_int) * -1;
                 }
-            }
+            },
+            Ok(object_id) => {
+                chomp = false;
+                // Did we find a different object?
+                if let Some(other_id) = ret {
+                    if object_id != other_id {
+                        debug!("Found multiple objects, returning object {}.", object_id);
+                        return (object_id as c_int) * -1;
+                    }
+                }
 
-            ret = Some(object_id as u32);
+                ret = Some(object_id);
+            },
+            Err(SearchError::NoMatches) => ()
         }
     }
 
     // Not in vehicle.
     // Search the adventurer.
     debug!("Seraching adventurer's inventory.");
-    let object_id = schlst_(noun, adjective, 0, 0, player.winner, special_object);
+    let search_res = search::search_adventurer(checked_noun, 
+                                               checked_adjective, 
+                                               player.get_winner(), 
+                                               special_object);
 
-    if object_id < 0 {
-        if chomp {
-            trace!("getobj_ returning {}", -10000);
-            return -10000;
-        } else {
-            debug!("Found multiple objects, returning object {}.", object_id.abs());
-            return object_id;
-        }
-    } else if object_id > 0 {
-        
-        // Did we find a different object?
-        if let Some(other_id) = ret {
-            if object_id != (other_id as c_int) {
-                debug!("Found multiple objects, returning object {}.", object_id.abs());
-                return object_id * -1;
+    match search_res {
+        Err(SearchError::MultipleMatches(ids)) => {
+            if chomp {
+                trace!("getobj_ returning {}", -10000);
+                return -10000;
+            } else {
+                debug!("Found multiple objects, returning object {}.", ids[0]);
+                return (ids[0] as c_int) * -1;
             }
-        }
-        
-        ret = Some(object_id as u32);
+        },
+        Ok(object_id) => {
+            // Did we find a different object?
+            if let Some(other_id) = ret {
+                if object_id != other_id {
+                    debug!("Found multiple objects, returning object {}.", object_id);
+                    return (object_id as c_int) * -1;
+                }
+            }
+            
+            ret = Some(object_id);
+        },
+        Err(SearchError::NoMatches) => ()
     }
 
     if let Some(object_id) = ret {
@@ -184,7 +214,7 @@ pub extern "C" fn getobj_(noun: c_int, adjective: c_int, special_object: c_int) 
                 return (object_id as c_int) * -1;
             }
 
-            ret = Some(object_id as u32);
+            ret = Some(object_id);
         }
     }
 
@@ -215,97 +245,56 @@ pub extern "C" fn schlst_(noun: c_int, adjective: c_int, room: c_int,
     trace!("schlst_({}, {}, {}, {}, {}, {})", noun, adjective, room, vehicle,
             adventurer, special_object);
 
-    match (room, vehicle, adventurer) {
+    let checked_noun = ffi::check_noun(noun);
+    let checked_adjective = ffi::check_adjective(adjective);
+
+    let checked_room = room.try_into().unwrap_or_else(|_| {
+        error!("Room is negative!");
+        core::exit_program()
+    });
+
+    let checked_vehicle = vehicle.try_into().unwrap_or_else(|_| {
+        error!("Vehicle is negative!");
+        core::exit_program()
+    });
+
+    let checked_adventurer = adventurer.try_into().unwrap_or_else(|_| {
+        error!("Adventurer is negative!");
+        core::exit_program()
+    });
+
+    let checked_special_object = special_object.try_into().unwrap_or_else(|_| {
+        error!("Special object is negative!");
+        core::exit_program()
+    });
+
+    let ret = match (checked_room, checked_vehicle, checked_adventurer) {
         (0, 0, 0) => {
             error!("schlist_ must search something.");
             core::exit_program()
         },
-        (id, 0, 0) => search_room(noun, adjective,
-                                  special_object as usize, id).unwrap_or(0),
-        (0, id, 0) => search_container(noun, adjective,
-                                       special_object as usize, id as usize).unwrap_or(0),
-        (0, 0, id) => search_adventurer(noun, adjective,
-                                        special_object as usize, id).unwrap_or(0),
+        (id, 0, 0) => search::search_room(checked_noun, 
+                                  checked_adjective,
+                                  checked_special_object, id),
+        (0, id, 0) => search::search_container(checked_noun, 
+                                       checked_adjective,
+                                       checked_special_object, id),
+        (0, 0, id) => search::search_adventurer(checked_noun, 
+                                        checked_adjective,
+                                        checked_special_object, id),
         _ => {
             error!("Cannot schlist_ multiple places!");
             core::exit_program()
         }
+    };
+
+    match ret {
+        Err(SearchError::NoMatches) => 0,
+        Ok(object_id) => object_id as c_int,
+        Err(SearchError::MultipleMatches(ids)) => (ids[0] as c_int) * -1
     }
 }
 
-fn search_room(noun: c_int, adjective: c_int,
-               special_object: usize, room: c_int) -> Option<c_int> {
-    trace!("Redirecting schlst_ to room search...");
-    let room_filter = |object: &ObjectEntry| object.is_in_room(room as usize);
-    search_objects(noun, adjective, special_object, room_filter)
-}
-
-fn search_container(noun: c_int, adjective: c_int, 
-                    special_object: usize, container: usize) -> Option<c_int> {
-    trace!("Redirecting schlst_ to container search...");
-    let container_filter = |object: &ObjectEntry| object.container == (container as c_int);
-    search_objects(noun, adjective, special_object, container_filter)
-}
-
-fn search_adventurer(noun: c_int, adjective: c_int,
-                     special_object: usize, adventurer: c_int) -> Option<c_int> {
-    trace!("Redirecting schlst_ to adventurer search...");
-    let adventurer_filter = |object: &ObjectEntry| object.adventurer == adventurer;
-    search_objects(noun, adjective, special_object, adventurer_filter)
-}
-
-// Looks through all objects for ones that match the given filter.
-fn search_objects<F>(noun: c_int, adjective: c_int, 
-                     special_object: usize, f: F) -> Option<c_int>
-where F: Fn(&ObjectEntry) -> bool
-{
-    trace!("search_objects({}, {}, {}, F)", noun, adjective, special_object);
-
-    let objects = unsafe { &ffi::objects };
-
-    let filtered_objects: Vec<_> = objects.iter()
-        .filter(|object| object.is_visible() && f(&object))
-        .collect();
-   
-    debug!("filtered objects: {:#?}", &filtered_objects);
-
-    // Look for direct matches.
-    let mut matches: Vec<_> = filtered_objects.iter()
-        .filter(|object| {
-            object.get_id() == special_object
-                || object.matches(noun as usize, adjective as usize)
-        })
-        .map(|object| {
-            let ret = object.get_id() as c_int;
-            ret
-        })
-        .collect();
-
-    debug!("direct matches: {:?}", &matches);
-
-    // Look for indirect matches.
-    let mut indirect_matches: Vec<_> = filtered_objects.into_iter()
-        .filter(|object| object.is_open() || object.is_transparent() ||
-               object.is_searchable())
-        .flat_map(|object| search_container(noun, adjective, special_object, object.get_id()))
-        .collect();
-
-    debug!("indirect matches: {:?}", &indirect_matches);
-
-    // Collect all the matches together.
-    matches.append(&mut indirect_matches);
-
-    if matches.len() == 0 {
-        trace!("search_objects: No objects found.");
-        None
-    } else if matches.len() == 1 {
-        trace!("search_objects: Returning {}", matches[0]);
-        Some(matches[0])
-    } else {
-        trace!("search_objects: Multiple matches found: {:?}", matches);
-        Some(matches[0].abs() * -1)
-    }
-}
 
 
 

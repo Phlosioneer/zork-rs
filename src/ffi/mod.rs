@@ -158,9 +158,25 @@ extern "C" {
 #[repr(C)]
 #[derive(Clone, Debug)]
 pub struct Player {
-    pub winner: c_int,
-    pub current_room: c_int,
+    winner: c_int,
+    current_room: c_int,
     pub tel_flag: Logical
+}
+
+impl Player {
+    pub fn get_winner(&self) -> usize {
+        self.winner.try_into().unwrap_or_else(|_| {
+            error!("player.winner is negative! (original: {})", self.winner);
+            core::exit_program()
+        })
+    }
+
+    pub fn get_current_room(&self) -> usize {
+        self.current_room.try_into().unwrap_or_else(|_| {
+            error!("player.current_room is negative! (original: {})", self.current_room);
+            core::exit_program()
+        })
+    }
 }
 
 // Info about all adventurers. (There are multiple...?)
@@ -288,5 +304,19 @@ impl From<Logical> for bool {
 /// Returns true if the input is nonzero.
 pub fn c_int_to_bool(input: c_int) -> bool {
     input != 0
+}
+
+pub fn check_noun(noun: c_int) -> usize {
+    noun.try_into().unwrap_or_else(|_| {
+        error!("Noun is negative!");
+        core::exit_program()
+    })
+}
+
+pub fn check_adjective(adjective: c_int) -> usize {
+    adjective.try_into().unwrap_or_else(|_| {
+        error!("Adjective is negative!");
+        core::exit_program()
+    })
 }
 
